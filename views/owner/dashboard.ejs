@@ -1,0 +1,69 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: white;">Mes salles</h2>
+        <a href="/owner/add-room" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Ajouter une salle
+        </a>
+    </div>
+
+    <div class="row">
+        <% if (rooms.length === 0) { %>
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Vous n'avez pas encore ajouté de salles. Commencez par en ajouter une !
+                </div>
+            </div>
+        <% } else { %>
+            <% rooms.forEach(function(room) { %>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <img src="<%= room.image %>" class="card-img-top" alt="<%= room.name %>">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= room.name %></h5>
+                            <p class="card-text"><%= room.description %></p>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-map-marker-alt"></i> <%= room.wilaya || '—' %>,<%= room.location || '—' %> </li>
+                                <li><strong>Capacité:</strong> <%= room.capacity %> personnes</li>
+                                <li><strong>Prix:</strong> <%= room.price %>DA / jour</li>
+                            </ul>
+                            <% if (room.equipment && room.equipment.length > 0) { %>
+                                <div class="mb-3">
+                                    <strong>Équipements:</strong>
+                                    <ul class="list-inline">
+                                        <% room.equipment.forEach(function(item) { %>
+                                            <li class="list-inline-item badge bg-secondary"><%= item %></li>
+                                        <% }); %>
+                                    </ul>
+                                </div>
+                            <% } %>
+                            <div class="d-flex gap-2">
+                                <a href="/owner/edit-room/<%= room.id %>" class="btn btn-outline-primary flex-grow-1">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <form action="/owner/delete-room/<%= room.id %>" method="POST" class="flex-grow-1 m-0" onsubmit="return confirmDelete()">
+                                    <button type="submit" class="btn btn-outline-danger w-100">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+</div>
+
+<!-- Ajout de Font Awesome pour les icônes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<!-- Script pour la confirmation de suppression -->
+<script>
+function confirmDelete() {
+    return confirm('Êtes-vous sûr de vouloir supprimer cette salle ? Cette action est irréversible.');
+}
+</script>
+
+<%- include('../partials/footer') %>

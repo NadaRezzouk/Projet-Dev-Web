@@ -1,0 +1,103 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card hover-shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center mb-0"><i class="fas fa-plus-circle me-2"></i>Ajouter une nouvelle salle</h3>
+                </div>
+                <div class="card-body">
+                    <form action="/owner/add-room" method="POST" enctype="multipart/form-data">
+                        <!-- Informations de base -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Nom de la salle</label>
+                                <input type="text" class="form-control" id="name" name="name" required placeholder="Ex: Salle de réunion principale">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="capacity" class="form-label">Capacité (personnes)</label>
+                                <input type="number" class="form-control" id="capacity" name="capacity" min="1" required placeholder="Ex: 50">
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required placeholder="Décrivez les caractéristiques de la salle, ses équipements principaux, etc."></textarea>
+                        </div>
+
+                        <!-- Localisation -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label">Adresse / Lieu</label>
+                                <input type="text" class="form-control" id="location" name="location" required placeholder="Ex: Centre-ville, Alger">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="wilaya" class="form-label">Wilaya</label>
+                                <input type="text" class="form-control" id="wilaya" name="wilaya" required placeholder="Ex: Alger">
+                            </div>
+                        </div>
+
+                        <!-- Prix et image -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="price" class="form-label">Prix par jour (DA)</label>
+                                <input type="number" class="form-control" id="price" name="price" min="0" required placeholder="Ex: 5000">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image" class="form-label">Image de la salle</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                                <div class="form-text">Formats acceptés: JPG, PNG, GIF. Taille max: 5MB</div>
+                            </div>
+                        </div>
+
+                        <!-- Équipements -->
+                        <div class="mb-3">
+                            <label class="form-label">Équipements disponibles</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="equipment" value="wifi" id="wifi">
+                                        <label class="form-check-label" for="wifi">
+                                            WiFi haut débit
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="equipment" value="projector" id="projector">
+                                        <label class="form-check-label" for="projector">
+                                            Vidéoprojecteur
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="equipment" value="sound" id="sound">
+                                        <label class="form-check-label" for="sound">
+                                            Système audio
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="equipment" value="whiteboard" id="whiteboard">
+                                        <label class="form-check-label" for="whiteboard">
+                                            Tableau blanc
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bouton de soumission -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Ajouter la salle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

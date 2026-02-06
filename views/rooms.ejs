@@ -1,0 +1,196 @@
+<%- include('partials/header') %>
+
+<div class="rooms-header bg-light py-5">
+    <div class="container">
+        <h1 class="display-4 text-center mb-4">Nos salles disponibles</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="search-box bg-white p-4 rounded-3 shadow-sm">
+                    <form class="row g-3" method="GET" action="/rooms">
+                        <div class="col-md-4">
+                            <label class="form-label">Capacité min.</label>
+                            <select class="form-select" name="capacity">
+                                <option value="" <%= !filters.capacity ? 'selected' : '' %>>Toutes</option>
+                                <option value="5" <%= filters.capacity === '5' ? 'selected' : '' %>>5+ personnes</option>
+                                <option value="10" <%= filters.capacity === '10' ? 'selected' : '' %>>10+ personnes</option>
+                                <option value="20" <%= filters.capacity === '20' ? 'selected' : '' %>>20+ personnes</option>
+                                <option value="50" <%= filters.capacity === '50' ? 'selected' : '' %>>50+ personnes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Prix max/jour</label>
+                            <select class="form-select" name="price">
+                                <option value="" <%= !filters.price ? 'selected' : '' %>>Tous les prix</option>
+                                <option value="8000" <%= filters.price === '8000' ? 'selected' : '' %>>Moins de 8 000 DA</option>
+                                <option value="12000" <%= filters.price === '12000' ? 'selected' : '' %>>Moins de 12 000 DA</option>
+                                <option value="20000" <%= filters.price === '20000' ? 'selected' : '' %>>Moins de 20 000 DA</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Wilaya</label>
+                            <select class="form-select" name="wilaya">
+                                <option value="" <%= !filters.wilaya ? 'selected' : '' %>>Toutes</option>
+                                <option value="Alger" <%= filters.wilaya === 'Alger' ? 'selected' : '' %>>Alger</option>
+                                <option value="Oran" <%= filters.wilaya === 'Oran' ? 'selected' : '' %>>Oran</option>
+                                <option value="Tlemcen" <%= filters.wilaya === 'Tlemcen' ? 'selected' : '' %>>Tlemcen</option>
+                                <option value="Constantine" <%= filters.wilaya === 'Constantine' ? 'selected' : '' %>>Constantine</option>
+                                <option value="Annaba" <%= filters.wilaya === 'Annaba' ? 'selected' : '' %>>Annaba</option>
+                                <option value="Batna" <%= filters.wilaya === 'Batna' ? 'selected' : '' %>>Batna</option>
+                                <option value="Ghardaïa" <%= filters.wilaya === 'Ghardaïa' ? 'selected' : '' %>>Ghardaïa</option>
+                                <option value="Tizi Ouzou" <%= filters.wilaya === 'Tizi Ouzou' ? 'selected' : '' %>>Tizi Ouzou</option>
+                                <option value="Béjaïa" <%= filters.wilaya === 'Béjaïa' ? 'selected' : '' %>>Béjaïa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Équipements</label>
+                            <select class="form-select" name="equipment">
+                                <option value="" <%= !filters.equipment ? 'selected' : '' %>>Tous</option>
+                                <option value="wifi" <%= filters.equipment === 'wifi' ? 'selected' : '' %>>WiFi</option>
+                                <option value="tv" <%= filters.equipment === 'tv' ? 'selected' : '' %>>TV/Projecteur</option>
+                                <option value="kitchen" <%= filters.equipment === 'kitchen' ? 'selected' : '' %>>Coin cuisine</option>
+                            </select>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>
+                                Filtrer
+                            </button>
+                            <a href="/rooms" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-times me-2"></i>
+                                Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <% rooms.forEach(function(room) { %>
+            <div class="col-md-6 col-lg-4">
+                <div class="room-card card h-100 shadow-sm hover-shadow">
+                    <div class="room-image-wrapper">
+                        <img src="<%= room.image %>" class="card-img-top" alt="<%= room.name %>">
+                        <div class="room-price">
+                            <span class="badge bg-primary px-3 py-2"><%= parseInt(room.price) %> DA/jour</span>
+                        </div>
+                        <% if (room.isAvailable) { %>
+                            <div class="room-status">
+                                <span class="badge bg-success">Disponible</span>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-3"><%= room.name %></h5>
+                        <div class="room-location mb-2">
+                            <i class="fas fa-map-marker-alt text-danger me-2"> <small style="color: #ffff; font-family: 'Arial', sans-serif;"> <%= room.wilaya || '—' %>,<%= room.location || '—' %> </small></i>
+                            
+                        </div>
+                        <div class="room-features mb-3">
+                            <span class="badge bg-light text-dark me-2">
+                                <i class="fas fa-users me-1"></i>
+                                <%= room.capacity %> pers.
+                            </span>
+                            <% if (room.equipment && room.equipment.includes('wifi')) { %>
+                                <span class="badge bg-light text-dark me-2">
+                                    <i class="fas fa-wifi me-1"></i>
+                                    WiFi
+                                </span>
+                            <% } %>
+                            <% if (room.equipment && room.equipment.includes('tv')) { %>
+                                <span class="badge bg-light text-dark me-2">
+                                    <i class="fas fa-tv me-1"></i>
+                                    TV
+                                </span>
+                            <% } %>
+                        </div>
+                        <p class="card-text text-muted"><%= room.description.substring(0, 100) %>...</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#roomModal<%= room.id %>">
+                                <i class="fas fa-info-circle me-2"></i>Détails
+                            </button>
+                            <% if (user && user.type === 'client') { %>
+                                <a href="/rooms/<%= room.id %>/book" class="btn btn-primary">
+                                    <i class="fas fa-calendar-check me-2"></i>Réserver
+                                </a>
+                            <% } else if (!user) { %>
+                                <a href="/login" class="btn btn-primary">
+                                    <i class="fas fa-calendar-check me-2"></i>Réserver
+                                </a>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal pour les détails de la salle -->
+            <div class="modal fade" id="roomModal<%= room.id %>" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><%= room.name %></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <img src="<%= room.image %>" class="img-fluid rounded" alt="<%= room.name %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold mb-3">Caractéristiques</h6>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-users text-primary me-2"></i>
+                                            Capacité: <%= room.capacity %> personnes
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-money-bill text-primary me-2"></i>
+                                            Prix: <%= parseInt(room.price) %> DA par jour
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                            Wilaya: <%= room.wilaya %>
+                                        </li>
+                                    </ul>
+                                    <h6 class="fw-bold mb-3 mt-4">Équipements</h6>
+                                    <div class="row g-2">
+                                        <% room.equipment && room.equipment.forEach(function(item) { %>
+                                            <div class="col-6">
+                                                <small>
+                                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                                    <%= item %>
+                                                </small>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h6 class="fw-bold mb-3">Description</h6>
+                                <p><%= room.description %></p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            <% if (user && user.type === 'client') { %>
+                                <a href="/rooms/<%= room.id %>/book" class="btn btn-primary">
+                                    <i class="fas fa-calendar-check me-2"></i>Réserver
+                                </a>
+                            <% } else if (!user) { %>
+                                <a href="/login" class="btn btn-primary">
+                                    <i class="fas fa-calendar-check me-2"></i>Réserver
+                                </a>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+<script src="/js/rooms.js"></script>

@@ -1,0 +1,28 @@
+<!-- Voici les modifications à apporter dans le fichier dashboard.ejs -->
+
+<!-- Remplacer la div des boutons d'action par : -->
+<div class="d-flex gap-2">
+    <a href="/owner/edit-room/<%= room.id %>" class="btn btn-outline-primary flex-grow-1">
+        <i class="fas fa-edit"></i> Modifier
+    </a>
+    <form action="/owner/delete-room/<%= room.id %>" method="POST" class="flex-grow-1 m-0" onsubmit="return confirmDelete()">
+        <button type="submit" class="btn btn-outline-danger w-100">
+            <i class="fas fa-trash"></i> Supprimer
+        </button>
+    </form>
+</div>
+
+<!-- Remplacer le script de suppression par : -->
+<script>
+function confirmDelete() {
+    return confirm('Êtes-vous sûr de vouloir supprimer cette salle ? Cette action est irréversible.');
+}
+</script>
+
+<!-- Ajouter la section des messages de succès/erreur après la div d'en-tête : -->
+<% if (typeof message !== 'undefined' && message) { %>
+    <div class="alert alert-<%= messageType %> alert-dismissible fade show">
+        <%= message %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>

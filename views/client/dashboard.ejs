@@ -1,0 +1,814 @@
+<%- include('../partials/header') %>
+
+<!-- Dashboard Client -->
+<div class="dashboard-wrapper">
+    <!-- Sidebar Simple -->
+    <aside class="dashboard-sidebar simple">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#searchRooms" title="Rechercher">
+                        <i class="fas fa-search"></i>
+                        <span>Rechercher</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#mapView" title="Carte">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>Carte</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#myBookings" title="Réservations">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Réservations</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#myReviews" title="Mes avis">
+                        <i class="fas fa-star"></i>
+                        <span>Mes avis</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+ 
+<% 
+  // Défensif : s'assurer que reviews et user existent
+  const reviewsArr = Array.isArray(reviews) ? reviews : [];
+  const currentUserId = user && (user.id || user.id === 0) ? String(user.id) : null;
+  // Avis de l'utilisateur (comparaison string pour éviter number/string mismatch)
+  const userReviews = currentUserId ? reviewsArr.filter(r => String(r.userId) === currentUserId) : [];
+%>
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Mon Espace <span class="gradient-text">Client</span></h1>
+                    <p class="header-subtitle">Gérez vos réservations et découvrez de nouvelles salles</p>
+                </div>
+                <div class="header-actions">
+                    <a href="/rooms" class="btn-header-action">
+                        <i class="fas fa-plus me-2"></i>Nouvelle réservation
+                    </a>
+                </div>
+            </div>
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="quick-stat-card">
+                    <div class="stat-icon-wrapper purple">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number"><%= rooms ? rooms.length : 0 %></span>
+                        <span class="stat-text">Salles disponibles</span>
+                    </div>
+                </div>
+                <div class="quick-stat-card">
+                    <div class="stat-icon-wrapper gold">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number"><%= currentBookings ? currentBookings.length : 0 %></span>
+                        <span class="stat-text">Réservations actives</span>
+                    </div>
+                </div>
+                <div class="quick-stat-card">
+                    <div class="stat-icon-wrapper green">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number"><%= reviews ? reviews.filter(r => r.userId === (user ? user.id : null)).length : 0 %></span>
+                        <span class="stat-text">Avis publiés</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Section Recherche -->
+        <section id="searchRooms" class="dashboard-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <div class="title-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div>
+                        <h2>Rechercher une salle</h2>
+                        <p class="section-subtitle">Trouvez l'espace parfait pour vos besoins</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filtres Premium -->
+            <div class="filter-card">
+                <form id="searchForm" class="filter-form">
+                    <div class="filter-row">
+                        <div class="filter-group main-search">
+                            <label class="filter-label">
+                                <i class="fas fa-search me-2"></i>Recherche
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" class="form-control premium-input" id="searchQuery" placeholder="Nom, description, équipements...">
+                                <span class="input-icon"><i class="fas fa-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="fas fa-coins me-2"></i>Prix min (DA)
+                            </label>
+                            <input type="number" class="form-control premium-input" id="minPrice" min="0" placeholder="0">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="fas fa-coins me-2"></i>Prix max (DA)
+                            </label>
+                            <input type="number" class="form-control premium-input" id="maxPrice" min="0" placeholder="∞">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="fas fa-users me-2"></i>Capacité min
+                            </label>
+                            <input type="number" class="form-control premium-input" id="minCapacity" min="1" placeholder="1">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="fas fa-calendar me-2"></i>Date
+                            </label>
+                            <input type="date" class="form-control premium-input" id="searchDate">
+                        </div>
+                    </div>
+                    <div class="filter-row equipment-filters">
+                        <span class="filter-label-inline"><i class="fas fa-tools me-2"></i>Équipements:</span>
+                        <div class="checkbox-group">
+                            <label class="premium-checkbox">
+                                <input type="checkbox" id="hasWifi" value="wifi">
+                                <span class="checkmark"></span>
+                                <i class="fas fa-wifi"></i> WiFi
+                            </label>
+                            <label class="premium-checkbox">
+                                <input type="checkbox" id="hasProjector" value="projector">
+                                <span class="checkmark"></span>
+                                <i class="fas fa-video"></i> Vidéoprojecteur
+                            </label>
+                            <label class="premium-checkbox">
+                                <input type="checkbox" id="hasAC" value="ac">
+                                <span class="checkmark"></span>
+                                <i class="fas fa-snowflake"></i> Climatisation
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Résultats Premium -->
+            <div class="results-header">
+                <span class="results-count"><%= rooms ? rooms.length : 0 %> salles trouvées</span>
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="grid"><i class="fas fa-th-large"></i></button>
+                    <button class="view-btn" data-view="list"><i class="fas fa-list"></i></button>
+                </div>
+            </div>
+            
+            <div class="rooms-grid" id="searchResults">
+                <% rooms.forEach(function(room) { %>
+                    <div class="premium-room-card room-card" data-aos="fade-up">
+                        <div class="room-card-image">
+                            <img src="<%= room.image %>" alt="<%= room.name %>">
+                            <div class="room-card-overlay">
+                                <button type="button" class="quick-view-btn" data-bs-toggle="modal" data-bs-target="#roomModal<%= room.id %>">
+                                    <i class="fas fa-eye"></i> Aperçu rapide
+                                </button>
+                            </div>
+                            <div class="room-badge">
+                                <i class="fas fa-star"></i> Premium
+                            </div>
+                            <div class="room-price-tag">
+                                <%= parseInt(room.price) %> DA<span>/jour</span>
+                            </div>
+                        </div>
+                        <div class="room-card-content">
+                            <h3 class="room-card-title"><%= room.name %></h3>
+                            <p class="room-card-desc"><%= room.description.substring(0, 80) %>...</p>
+                            <div class="room-card-features">
+                                <div class="feature">
+                                    <i class="fas fa-users"></i>
+                                    <span><%= room.capacity %> pers.</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span><%= room.wilaya %></span>
+                                </div>
+                            </div>
+                            <div class="room-card-actions">
+                                <button type="button" class="btn-details" data-bs-toggle="modal" data-bs-target="#roomModal<%= room.id %>">
+                                    <i class="fas fa-info-circle"></i> Détails
+                                </button>
+                                <a href="/rooms/<%= room.id %>/book" class="btn-book">
+                                    <i class="fas fa-calendar-check"></i> Réserver
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </section>
+
+        <!-- Section Carte -->
+        <section id="mapView" class="dashboard-section" style="display: none;">
+            <div class="section-header">
+                <div class="section-title">
+                    <div class="title-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div>
+                        <h2>Carte des salles</h2>
+                        <p class="section-subtitle">Explorez les salles disponibles dans votre région</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="map-section-wrapper">
+                <!-- Sidebar avec liste des salles -->
+                <div class="map-sidebar">
+                    <div class="map-sidebar-header">
+                        <h4><i class="fas fa-list me-2"></i>Salles disponibles</h4>
+                        <span class="rooms-count"><%= rooms ? rooms.length : 0 %> salles</span>
+                    </div>
+                    <div class="map-rooms-list">
+                        <% rooms.forEach(function(room, index) { %>
+                            <div class="map-room-item" data-room-id="<%= room.id %>" data-lat="<%= room.lat %>" data-lng="<%= room.lng %>">
+                                <div class="map-room-image">
+                                    <img src="<%= room.image %>" alt="<%= room.name %>">
+                                </div>
+                                <div class="map-room-info">
+                                    <h5 class="map-room-name"><%= room.name %></h5>
+                                    <div class="map-room-details">
+                                        <span><i class="fas fa-map-marker-alt"></i> <%= room.wilaya %></span>
+                                        <span><i class="fas fa-users"></i> <%= room.capacity %></span>
+                                    </div>
+                                    <div class="map-room-price">
+                                        <%= parseInt(room.price) %> DA<span>/jour</span>
+                                    </div>
+                                </div>
+                                <div class="map-room-action">
+                                    <a href="/rooms/<%= room.id %>/book" class="btn-map-book" title="Réserver">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+                
+                <!-- Carte principale -->
+                <div class="map-main">
+                    <div class="map-container-premium">
+                        <div id="map"></div>
+                        <!-- Contrôles de la carte -->
+                        <div class="map-controls">
+                            <button class="map-control-btn" id="mapZoomIn" title="Zoom +">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="map-control-btn" id="mapZoomOut" title="Zoom -">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button class="map-control-btn" id="mapReset" title="Réinitialiser">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <!-- Légende -->
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <span class="legend-marker available"></span>
+                                <span>Disponible</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Mes Réservations -->
+        <section id="myBookings" class="dashboard-section" style="display: none;">
+            <div class="section-header">
+                <div class="section-title">
+                    <div class="title-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <h2>Mes réservations</h2>
+                        <p class="section-subtitle">Suivez et gérez vos réservations</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Réservations en cours -->
+<div class="bookings-section">
+    <h3 class="subsection-title">
+        <span class="status-dot active"></span>
+        Réservations en cours
+    </h3>
+    <div class="bookings-grid">
+        <% if (currentBookings && currentBookings.length > 0) { %>
+            <% currentBookings.forEach(function(booking) { %>
+                <div class="booking-card active" data-aos="fade-up">
+                    <div class="booking-status">
+                        <span class="status-badge active">
+                            <i class="fas fa-clock"></i> En cours
+                        </span>
+                    </div>
+                    <div class="booking-content">
+                        <h4 class="booking-title"><%= booking.room.name %></h4>
+                        <div class="booking-details">
+                            <div class="booking-detail">
+                                <i class="fas fa-calendar"></i>
+                                <div class="detail-content">
+                                    <span class="detail-label">Période</span>
+                                    <span class="detail-value">
+                                        <%= new Date(booking.startDate).toLocaleDateString('fr-FR') %> - 
+                                        <%= new Date(booking.endDate).toLocaleDateString('fr-FR') %>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="booking-detail">
+                                <i class="fas fa-users"></i>
+                                <div class="detail-content">
+                                    <span class="detail-label">Participants</span>
+                                    <span class="detail-value"><%= booking.participants %> personnes</span>
+                                </div>
+                            </div>
+                            <div class="booking-detail">
+                                <i class="fas fa-coins"></i>
+                                <div class="detail-content">
+                                    <span class="detail-label">Prix</span>
+                                    <span class="detail-value price"><%= parseInt(booking.room.price) %> DA/jour</span>
+                                </div>
+                            </div>
+                            <div class="booking-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div class="detail-content">
+                                    <span class="detail-label">Localisation</span>
+                                    <span class="detail-value"><%= booking.room.wilaya %></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions: laisser un avis si pas encore -->
+                        <div class="booking-actions mt-3">
+                            <% const hasReviewCurr = reviewsArr.find(function(r) { return r.bookingId === booking.id; }); %>
+                            <% if (hasReviewCurr) { %>
+                                <span class="badge bg-success"><i class="fas fa-check me-1"></i> Avis déposé</span>
+                            <% } else { %>
+                                <a href="/bookings/<%= booking.id %>/review" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-star me-1"></i> Laisser un avis
+                                </a>
+                            <% } %>
+                        </div>
+
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h4>Aucune réservation en cours</h4>
+                <p>Vous n'avez pas de réservation active pour le moment.</p>
+                <a href="/rooms" class="btn-empty-action">
+                    <i class="fas fa-search me-2"></i>Trouver une salle
+                </a>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+          <!-- Réservations passées -->
+<div class="bookings-section past">
+    <h3 class="subsection-title">
+        <span class="status-dot past"></span>
+        Réservations passées
+    </h3>
+    <div class="bookings-grid">
+        <% if (pastBookings && pastBookings.length > 0) { %>
+            <% pastBookings.forEach(function(booking) { %>
+                <div class="booking-card past" data-aos="fade-up">
+                    <div class="booking-status">
+                        <span class="status-badge past">
+                            <i class="fas fa-check-circle"></i> Terminée
+                        </span>
+                    </div>
+                    <div class="booking-content">
+                        <h4 class="booking-title"><%= booking.room.name %></h4>
+                        <div class="booking-details">
+                            <div class="booking-detail">
+                                <i class="fas fa-calendar"></i>
+                                <div class="detail-content">
+                                    <span class="detail-label">Période</span>
+                                    <span class="detail-value">
+                                        <%= new Date(booking.startDate).toLocaleDateString('fr-FR') %> - 
+                                        <%= new Date(booking.endDate).toLocaleDateString('fr-FR') %>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="booking-detail">
+                                <i class="fas fa-users"></i>
+                                <div class="detail-content">
+                                    <span class="detail-label">Participants</span>
+                                    <span class="detail-value"><%= booking.participants %> personnes</span>
+                                </div>
+                            </div>
+                            <div class="booking-detail">
+                                <i class="fas fa-coins"></i>
+                                <div class="detail-content">
+                                    <span class="detail-label">Prix</span>
+                                    <span class="detail-value"><%= parseInt(booking.room.price) %> DA/jour</span>
+                                </div>
+                            </div>
+                            <div class="booking-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div class="detail-content">
+                                    <span class="detail-label">Localisation</span>
+                                    <span class="detail-value"><%= booking.room.wilaya %></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions: laisser un avis si pas encore -->
+                        <div class="booking-actions mt-3">
+                            <% const hasReviewPast = reviewsArr.find(function(r) { return r.bookingId === booking.id; }); %>
+                            <% if (hasReviewPast) { %>
+                                <span class="badge bg-success"><i class="fas fa-check me-1"></i> Avis déposé</span>
+                            <% } else { %>
+                                <a href="/bookings/<%= booking.id %>/review" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-star me-1"></i> Laisser un avis
+                                </a>
+                            <% } %>
+                        </div>
+
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="empty-state small">
+                <div class="empty-icon small">
+                    <i class="fas fa-history"></i>
+                </div>
+                <p>Aucune réservation passée</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+       <!-- Section Mes Avis -->
+<section id="myReviews" class="dashboard-section" style="display: none;">
+  ...
+  <div class="reviews-grid">
+    <% if (userReviews && userReviews.length > 0) { %>
+      <% userReviews.forEach(function(review) { %>
+        <div class="review-card" data-aos="fade-up">
+          <div class="review-header">
+            <h4 class="review-room"><%= review.roomName || 'Salle' %></h4>
+            <div class="review-rating">
+              <% for (let i = 0; i < 5; i++) { %>
+                <i class="fas fa-star <%= i < (parseInt(review.rating,10)||0) ? 'active' : '' %>"></i>
+              <% } %>
+            </div>
+          </div>
+          <p class="review-text"><%= review.comment || '' %></p>
+          <div class="review-footer">
+            <span class="review-date">
+              <i class="fas fa-calendar-alt me-2"></i>
+              <%= review.date ? (new Date(review.date)).toLocaleDateString('fr-FR') : '' %>
+            </span>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="empty-state"> ... message vide ... </div>
+    <% } %>
+  </div>
+</section>
+
+<!-- Modal de détails de la salle - Premium -->
+<% rooms.forEach(function(room) { %>
+    <div class="modal fade premium-modal" id="roomModal<%= room.id %>" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-door-open me-2"></i><%= room.name %>
+                    </h5>
+                    <button type="button" class="btn-close-premium" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-room-layout">
+                        <div class="modal-room-image">
+                            <img src="<%= room.image %>" alt="<%= room.name %>">
+                            <div class="modal-price-badge">
+                                <%= parseInt(room.price) %> DA<span>/jour</span>
+                            </div>
+                        </div>
+                        <div class="modal-room-info">
+                            <h6 class="info-title">
+                                <i class="fas fa-list-ul me-2"></i>Caractéristiques
+                            </h6>
+                            <ul class="info-list">
+                                <li>
+                                    <i class="fas fa-users"></i>
+                                    <span>Capacité: <strong><%= room.capacity %> personnes</strong></span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-coins"></i>
+                                    <span>Prix: <strong><%= parseInt(room.price) %> DA/jour</strong></span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Wilaya: <strong><%= room.wilaya %></strong></span>
+                                </li>
+                            </ul>
+                            <h6 class="info-title mt-4">
+                                <i class="fas fa-tools me-2"></i>Équipements
+                            </h6>
+                            <div class="equipment-grid">
+                                <% room.equipment && room.equipment.forEach(function(item) { %>
+                                    <div class="equipment-item">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span><%= item %></span>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-description">
+                        <h6 class="info-title">
+                            <i class="fas fa-align-left me-2"></i>Description
+                        </h6>
+                        <p><%= room.description %></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Fermer
+                    </button>
+                    <a href="/rooms/<%= room.id %>/book" class="btn-modal-primary">
+                        <i class="fas fa-calendar-check me-2"></i>Réserver maintenant
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+<% }); %>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+// Navigation entre les sections (uniquement pour la sidebar du dashboard)
+document.querySelectorAll('.dashboard-sidebar .nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Cacher toutes les sections
+        document.querySelectorAll('.dashboard-main section').forEach(section => {
+            section.style.display = 'none';
+        });
+        // Afficher la section correspondante
+        const targetId = this.getAttribute('href').substring(1);
+        document.getElementById(targetId).style.display = 'block';
+        
+        // Mettre à jour la classe active (uniquement dans la sidebar)
+        document.querySelectorAll('.dashboard-sidebar .nav-link').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Gérer l'affichage du header
+        const header = document.querySelector('.dashboard-header');
+        if (targetId === 'myReviews') {
+            header.style.display = 'none';
+        } else {
+            header.style.display = 'block';
+        }
+        
+        // Redimensionner la carte si on affiche la section carte
+        if (targetId === 'mapView' && typeof map !== 'undefined') {
+            setTimeout(() => map.invalidateSize(), 100);
+        }
+    });
+});
+
+// Afficher la section de recherche par défaut
+document.getElementById('searchRooms').style.display = 'block';
+
+// Fonction de filtrage des salles
+function filterRooms() {
+    const query = document.getElementById('searchQuery').value.toLowerCase();
+    const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+    const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+    const minCapacity = parseInt(document.getElementById('minCapacity').value) || 0;
+    const date = document.getElementById('searchDate').value;
+    const wifi = document.getElementById('hasWifi').checked;
+    const projector = document.getElementById('hasProjector').checked;
+    const ac = document.getElementById('hasAC').checked;
+
+    document.querySelectorAll('.room-card').forEach(card => {
+        // Logique de filtrage ici
+        card.style.display = 'block';
+    });
+}
+
+// Écouteurs d'événements pour les filtres
+document.querySelectorAll('#searchForm input').forEach(input => {
+    input.addEventListener('change', filterRooms);
+    input.addEventListener('keyup', filterRooms);
+});
+
+// Initialisation de la carte avec style sombre
+const map = L.map('map', {
+    zoomControl: false
+}).setView([36.7538, 3.0588], 10); // Centré sur Alger
+
+// Tile layer sombre
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    maxZoom: 19
+}).addTo(map);
+
+// Style personnalisé pour les marqueurs
+const customIcon = L.divIcon({
+    className: 'custom-map-marker',
+    html: '<div class="marker-pin"><i class="fas fa-door-open"></i></div>',
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+});
+
+// Stocker les marqueurs
+const markers = {};
+
+// Ajouter les marqueurs pour chaque salle
+<% rooms.forEach(function(room) { %>
+    const marker<%= room.id %> = L.marker([<%= room.lat %>, <%= room.lng %>], { icon: customIcon })
+        .bindPopup(`
+            <div class="map-popup">
+                <img src="<%= room.image %>" alt="<%= room.name %>">
+                <div class="popup-content">
+                    <h5><%= room.name %></h5>
+                    <p class="popup-location"><i class="fas fa-map-marker-alt"></i> <%= room.wilaya %></p>
+                    <p class="popup-price"><%= parseInt(room.price) %> DA/jour</p>
+                    <a href="/rooms/<%= room.id %>/book" class="popup-btn">Réserver</a>
+                </div>
+            </div>
+        `, { className: 'custom-popup' })
+        .addTo(map);
+    markers['<%= room.id %>'] = marker<%= room.id %>;
+<% }); %>
+
+// Interaction entre la liste et la carte
+document.querySelectorAll('.map-room-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const lat = parseFloat(this.dataset.lat);
+        const lng = parseFloat(this.dataset.lng);
+        const roomId = this.dataset.roomId;
+        
+        // Centrer la carte
+        map.setView([lat, lng], 15, { animate: true });
+        
+        // Ouvrir le popup
+        if (markers[roomId]) {
+            markers[roomId].openPopup();
+        }
+        
+        // Mettre à jour l'état actif
+        document.querySelectorAll('.map-room-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// Contrôles de la carte
+document.getElementById('mapZoomIn')?.addEventListener('click', () => map.zoomIn());
+document.getElementById('mapZoomOut')?.addEventListener('click', () => map.zoomOut());
+document.getElementById('mapReset')?.addEventListener('click', () => map.setView([36.7538, 3.0588], 10));
+</script>
+
+<!-- Styles pour les marqueurs et popups de la carte -->
+<style>
+.custom-map-marker {
+    background: transparent;
+}
+
+.marker-pin {
+    width: 40px;
+    height: 40px;
+    border-radius: 50% 50% 50% 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
+    animation: marker-bounce 0.5s ease-out;
+}
+
+.marker-pin i {
+    transform: rotate(45deg);
+    color: white;
+    font-size: 16px;
+}
+
+@keyframes marker-bounce {
+    0%, 100% { transform: rotate(-45deg) translateY(0); }
+    50% { transform: rotate(-45deg) translateY(-10px); }
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.custom-popup .leaflet-popup-tip {
+    background: rgba(15, 23, 42, 0.95);
+}
+
+.custom-popup .leaflet-popup-content {
+    margin: 0;
+    width: 250px !important;
+}
+
+.map-popup img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.popup-content {
+    padding: 1rem;
+}
+
+.popup-content h5 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 0.5rem;
+}
+
+.popup-location {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0 0 0.25rem;
+}
+
+.popup-location i {
+    color: #8b5cf6;
+    margin-right: 0.25rem;
+}
+
+.popup-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f59e0b;
+    margin: 0 0 0.75rem;
+}
+
+.popup-btn {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.popup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.leaflet-popup-close-button {
+    color: #94a3b8 !important;
+    font-size: 20px !important;
+    padding: 8px !important;
+}
+
+.leaflet-popup-close-button:hover {
+    color: #ffffff !important;
+}
+</style>
+
+<%- include('../partials/footer') %>

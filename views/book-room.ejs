@@ -1,0 +1,152 @@
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Détails de la salle -->
+        <div class="col-md-6">
+            <div class="card">
+                <img src="<%= room.image %>" class="card-img-top" alt="<%= room.name %>">
+                <div class="card-body">
+                    <h5 class="card-title"><%= room.name %></h5>
+                    <p class="card-text"><%= room.description %></p>
+                    <ul class="list-unstyled">
+                        <li><strong>Capacité:</strong> <%= room.capacity %> personnes</li>
+                        <li><strong>Prix:</strong> <%= room.price.toLocaleString('fr-DZ') %> DA / jour</li>
+                    </ul>
+                    <% if (room.equipment && room.equipment.length > 0) { %>
+                        <div class="mb-3">
+                            <strong>Équipements:</strong>
+                            <div class="mt-2">
+                                <% room.equipment.forEach(function(item) { %>
+                                    <span class="badge bg-secondary me-1"><%= item %></span>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+             <!-- Avis sur la salle -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">Avis des clients</h5>
+        </div>
+        <div class="card-body">
+          <% 
+            // Utiliser room.reviews si présent, sinon tableau vide
+            const displayedReviews = Array.isArray(room && room.reviews ? room.reviews : []) ? room.reviews : [];
+            const reviewCount = displayedReviews.length;
+            const averageRating = reviewCount > 0 ? (displayedReviews.reduce((s, r) => s + (Number(r.rating) || 0), 0) / reviewCount).toFixed(1) : 0;
+          %>
+
+          <% if (reviewCount > 0) { %>
+            <!-- Note moyenne -->
+            <div class="alert alert-light mb-3">
+              <div class="d-flex align-items-center">
+                <h4 class="mb-0 me-2 text-warning"><%= averageRating %>/5</h4>
+                <span class="badge bg-secondary"><%= reviewCount %> avis</span>
+              </div>
+            </div>
+
+            <!-- Liste des avis -->
+            <% displayedReviews.forEach(function(review) { %>
+              <div class="border-bottom pb-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <% 
+                      const stars = Number(review.rating) || 0;
+                      for(let i = 0; i < 5; i++) { 
+                    %>
+                      <i class="fas fa-star <%= i < stars ? 'text-warning' : 'text-muted' %>"></i>
+                    <% } %>
+                  </div>
+                  <small class="text-muted"><%= review.date ? (new Date(review.date)).toLocaleDateString('fr-FR') : '' %></small>
+                </div>
+                <p class="mb-1 mt-2"><%= review.comment || '' %></p>
+                <small class="text-muted">- <%= review.userName || ('Utilisateur #' + (review.userId || 'anonyme')) %></small>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <p class="text-muted mb-0">Aucun avis pour le moment</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+
+        <!-- Formulaire de réservation -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Réserver cette salle</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/rooms/<%= room.id %>/book" method="POST" id="bookingForm">
+                        <div class="mb-3">
+                            <label for="startDate" class="form-label">Date de début</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate" required 
+                                   min="<%= new Date().toISOString().split('T')[0] %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="endDate" class="form-label">Date de fin</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="participants" class="form-label">Nombre de participants</label>
+                            <input type="number" class="form-control" id="participants" name="participants" 
+                                   min="1" max="<%= room.capacity %>" required>
+                            <small class="form-text text-muted">Maximum <%= room.capacity %> personnes</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="purpose" class="form-label">Objet de la réservation</label>
+                            <textarea class="form-control" id="purpose" name="purpose" rows="3" required></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <p><strong>Prix total: </strong><span id="totalPrice">0</span> DA</p>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Confirmer la réservation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const totalPriceSpan = document.getElementById('totalPrice');
+    const pricePerDay = <%= Number(room.price || 0) %>;
+
+   function updateTotalPrice() {
+    const start = startDateInput.value ? new Date(startDateInput.value) : null;
+    const end = endDateInput.value ? new Date(endDateInput.value) : null;
+
+    if (start && end && start <= end) {
+      // calcule le nombre de jours inclusifs
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      const totalPrice = diffDays * pricePerDay;
+      totalPriceSpan.textContent = totalPrice.toLocaleString('fr-DZ');
+    } else {
+      totalPriceSpan.textContent = '0';
+    }
+  }
+
+
+    startDateInput.addEventListener('change', updateTotalPrice);
+    endDateInput.addEventListener('change', updateTotalPrice);
+});
+</script>
+
+<%- include('partials/footer') %>

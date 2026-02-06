@@ -1,0 +1,36 @@
+Dans le fichier dashboard.ejs, trouvez cette partie :
+
+<!-- ANCIEN CODE À REMPLACER -->
+<div class="btn-group">
+    <a href="/owner/edit-room/<%= room.id %>" class="btn btn-outline-primary">Modifier</a>
+    <button class="btn btn-outline-danger" onclick="deleteRoom(<%= room.id %>)">Supprimer</button>
+</div>
+
+<!-- Script à remplacer -->
+<script>
+function deleteRoom(roomId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette salle ?')) {
+        // Ici, vous ajouterez la logique de suppression
+        alert('Fonctionnalité à implémenter');
+    }
+}
+</script>
+
+<!-- REMPLACER PAR CE NOUVEAU CODE -->
+<div class="d-flex gap-2">
+    <a href="/owner/edit-room/<%= room.id %>" class="btn btn-outline-primary flex-grow-1">
+        <i class="fas fa-edit"></i> Modifier
+    </a>
+    <form action="/owner/delete-room/<%= room.id %>" method="POST" class="flex-grow-1 m-0" onsubmit="return confirmDelete()">
+        <button type="submit" class="btn btn-outline-danger w-100">
+            <i class="fas fa-trash"></i> Supprimer
+        </button>
+    </form>
+</div>
+
+<!-- Nouveau script -->
+<script>
+function confirmDelete() {
+    return confirm('Êtes-vous sûr de vouloir supprimer cette salle ? Cette action est irréversible.');
+}
+</script>

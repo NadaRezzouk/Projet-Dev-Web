@@ -1,0 +1,200 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Historique de mes réservations</h2>
+
+    <div class="row">
+        <!-- Réservations en cours -->
+        <div class="col-md-12 mb-4">
+            <h3>Réservations en cours</h3>
+            <div class="row">
+                <% const currentDate = new Date(); %>
+                <% const currentBookings = bookings.filter(b => new Date(b.endDate) >= currentDate && b.userId === user.id); %>
+                
+                <% if (currentBookings.length === 0) { %>
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            Vous n'avez pas de réservation en cours.
+                        </div>
+                    </div>
+                <% } else { %>
+                    <% currentBookings.forEach(function(booking) { %>
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= booking.room.name %></h5>
+                                    <div class="mb-3">
+                                        <strong>Dates:</strong>
+                                        <p class="mb-0">Du <%= new Date(booking.startDate).toLocaleDateString() %></p>
+                                        <p>Au <%= new Date(booking.endDate).toLocaleDateString() %></p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Détails:</strong>
+                                        <ul class="list-unstyled">
+                                            <li>Participants: <%= booking.participants %> personnes</li>
+                                            <li>Prix total: <%= booking.totalPrice %>€</li>
+                                            <li>Objet: <%= booking.purpose %></li>
+                                        </ul>
+                                    </div>
+                                    <div class="text-end">
+                                        <button class="btn btn-outline-danger btn-sm" onclick="cancelBooking(<%= booking.id %>)">
+                                            <i class="fas fa-times"></i> Annuler
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Réservations passées -->
+        <div class="col-md-12">
+            <h3>Réservations passées</h3>
+            <div class="row">
+                <% const pastBookings = bookings.filter(b => new Date(b.endDate) < currentDate && b.userId === user.id); %>
+                
+                <% if (pastBookings.length === 0) { %>
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            Vous n'avez pas encore de réservation passée.
+                        </div>
+                    </div>
+                <% } else { %>
+                    <% pastBookings.forEach(function(booking) { %>
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= booking.room.name %></h5>
+                                    <div class="mb-3">
+                                        <strong>Dates:</strong>
+                                        <p class="mb-0">Du <%= new Date(booking.startDate).toLocaleDateString() %></p>
+                                        <p>Au <%= new Date(booking.endDate).toLocaleDateString() %></p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Détails:</strong>
+                                        <ul class="list-unstyled">
+                                            <li>Participants: <%= booking.participants %> personnes</li>
+                                            <li>Prix total: <%= booking.totalPrice %>€</li>
+                                            <li>Objet: <%= booking.purpose %></li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <% if (!booking.review) { %>
+                                        <div class="mt-3">
+                                            <button class="btn btn-primary w-100" onclick="showReviewModal(<%= booking.id %>, '<%= booking.room.name %>')">
+                                                <i class="fas fa-star"></i> Laisser un avis
+                                            </button>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="mt-3 p-3 bg-light rounded">
+                                            <strong>Votre avis :</strong>
+                                            <div class="mb-2">
+                                                <% for(let i = 0; i < 5; i++) { %>
+                                                    <i class="fas fa-star <%= i < booking.review.rating ? 'text-warning' : 'text-muted' %>"></i>
+                                                <% } %>
+                                            </div>
+                                            <p class="mb-0"><%= booking.review.comment %></p>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour laisser un avis -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Laisser un avis pour <span id="roomName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Note</label>
+                        <div class="rating">
+                            <% for(let i = 5; i >= 1; i--) { %>
+                                <input type="radio" name="rating" value="<%= i %>" id="star<%= i %>" required>
+                                <label for="star<%= i %>"><i class="fas fa-star"></i></label>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Commentaire</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" form="reviewForm" class="btn btn-primary">Envoyer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    cursor: pointer;
+    padding: 5px;
+    color: #ddd;
+}
+
+.rating input:checked ~ label,
+.rating label:hover,
+.rating label:hover ~ label {
+    color: #ffc107;
+}
+</style>
+
+<script>
+function showReviewModal(bookingId, roomName) {
+    document.getElementById('roomName').textContent = roomName;
+    const form = document.getElementById('reviewForm');
+    form.action = `/booking/${bookingId}/review`;
+    new bootstrap.Modal(document.getElementById('reviewModal')).show();
+}
+
+function cancelBooking(bookingId) {
+    if (confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+        fetch(`/booking/${bookingId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de l\'annulation de la réservation');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de l\'annulation de la réservation');
+        });
+    }
+}
+</script>
+
+<%- include('../partials/footer') %>

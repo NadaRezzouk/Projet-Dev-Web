@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+    <div class="jumbotron text-center">
+        <h1 class="display-4">Bienvenue sur RoomRental</h1>
+        <p class="lead">La meilleure plateforme pour trouver et réserver votre salle idéale</p>
+        <hr class="my-4">
+        <p>Des espaces adaptés à tous vos besoins : réunions, conférences, formations, événements...</p>
+        <a class="btn btn-primary btn-lg" href="/rooms" role="button">Découvrir nos salles</a>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6 mb-4">
+            <div class="feature-card p-4 bg-white rounded shadow-sm">
+                <h3>Trouvez la salle parfaite</h3>
+                <p>Large choix de salles équipées et modernes dans toute la ville. Filtrez par capacité, prix et disponibilité.</p>
+                <img src="/uploads/acceuil.jpeg" alt="Salle moderne" class="img-fluid rounded mt-3" style="height: 200px; width: 100%; object-fit: cover;">
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="feature-card p-4 bg-white rounded shadow-sm">
+                <h3>Réservation simplifiée</h3>
+                <p>Réservez en quelques clics. Paiement sécurisé, confirmation instantanée et support client disponible.</p>
+                <img src="https://images.unsplash.com/photo-1577412647305-991150c7d163?w=800" alt="Réservation facile" class="img-fluid rounded mt-3" style="height: 200px; width: 100%; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

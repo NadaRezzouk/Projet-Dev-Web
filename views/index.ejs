@@ -1,0 +1,285 @@
+<%- include('partials/header') %>
+
+<!-- Hero Section -->
+<section class="hero-section position-relative bg-gradient text-white py-5" data-aos="fade-up">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
+                <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInLeft">Trouvez votre espace professionnel idéal en Algérie</h1>
+                <p class="lead mb-4 animate__animated animate__fadeInLeft animate__delay-1s">Des salles modernes et équipées dans les plus grandes villes d'Algérie pour vos réunions, formations et événements professionnels.</p>
+                <div class="d-flex gap-3 animate__animated animate__fadeInUp animate__delay-2s">
+                    <a href="/rooms" class="btn btn-light btn-lg hover-scale">Découvrir nos salles</a>
+                    <% if (!user) { %>
+                        <a href="/register" class="btn btn-outline-light btn-lg hover-scale">S'inscrire gratuitement</a>
+                    <% } %>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left" data-aos-delay="400">
+                <img src="/images/hero-image.jpg" alt="Espace de travail moderne en Algérie" class="img-fluid rounded-3 shadow-lg hover-lift">
+            </div>
+        </div>
+    </div>
+    <div class="shape-bottom">
+        <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path d="M0,0 C240,100 480,100 720,50 C960,0 1200,0 1440,100 L1440 100 L0 100 Z" fill="#ffffff"></path>
+        </svg>
+    </div>
+</section>
+
+<!-- Statistiques -->
+<section class="stats-section py-5" data-aos="fade-up">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="100">
+                <div class="stat-card p-4 bg-white rounded-3 shadow-sm hover-lift">
+                    <i class="fas fa-door-open fa-2x text-primary mb-3 pulse"></i>
+                    <h3 class="h2 mb-2 counter"><%= stats.totalRooms %></h3>
+                    <p class="text-muted mb-0">Salles disponibles</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="200">
+                <div class="stat-card p-4 bg-white rounded-3 shadow-sm hover-lift">
+                    <i class="fas fa-calendar-check fa-2x text-success mb-3"></i>
+                    <h3 class="h2 mb-2 counter"><%= stats.totalBookings %></h3>
+                    <p class="text-muted mb-0">Réservations</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="300">
+                <div class="stat-card p-4 bg-white rounded-3 shadow-sm hover-lift">
+                    <i class="fas fa-star fa-2x text-warning mb-3"></i>
+                    <h3 class="h2 mb-2 counter"><%= stats.averageRating %>/5</h3>
+                    <p class="text-muted mb-0">Note moyenne</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="400">
+                <div class="stat-card p-4 bg-white rounded-3 shadow-sm hover-lift">
+                    <i class="fas fa-users fa-2x text-info mb-3"></i>
+                    <h3 class="h2 mb-2 counter"><%= stats.totalUsers %></h3>
+                    <p class="text-muted mb-0">Utilisateurs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dernières salles ajoutées -->
+<section class="rooms-section py-5" data-aos="fade-up">
+    <div class="container">
+        <h2 class="text-center mb-5 section-title">Nos dernières salles</h2>
+        <div class="row g-4">
+            <% latestRooms.forEach(function(room, index) { %>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+                    <div class="room-card card border-0 rounded-4 shadow-sm h-100">
+                        <div class="room-image-wrapper rounded-top-4 overflow-hidden">
+                            <img src="<%= room.image %>" class="card-img-top hover-zoom" alt="<%= room.name %>">
+                            <div class="room-overlay">
+                                <span class="badge bg-primary px-3 py-2"><%= parseInt(room.price) %> DA/jour</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="room-header">
+                                <h5 class="card-title fw-bold"><%= room.name %></h5>
+                                <div class="location-badge">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <%= room.location %>
+                                </div>
+                            </div>
+                            <p class="card-text text-muted"><%= room.description.substring(0, 100) %>...</p>
+                            <div class="room-features">
+                                <div class="feature-badge">
+                                    <i class="fas fa-users"></i>
+                                    <%= room.capacity %> pers.
+                                </div>
+                                <div class="feature-badge">
+                                    <i class="fas fa-wifi"></i>
+                                    WiFi
+                                </div>
+                                <div class="feature-badge">
+                                    <i class="fas fa-tv"></i>
+                                    TV
+                                </div>
+                                <div class="feature-badge">
+                                    <i class="fas fa-coffee"></i>
+                                    Pause café
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-0">
+                            <a href="/book-room/<%= room.id %>" class="btn btn-primary w-100">
+                                <i class="fas fa-calendar-check me-2"></i>
+                                Réserver maintenant
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        <div class="text-center mt-5">
+            <a href="/rooms" class="btn btn-primary btn-lg">
+                <i class="fas fa-th-large me-2"></i>
+                Voir toutes nos salles
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Fonctionnalités -->
+<section class="why-choose-us">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <div class="section-heading">
+                    <h2>Pourquoi nous choisir ?</h2>
+                    <div class="separator">
+                        <span class="dot"></span>
+                        <span class="line"></span>
+                        <span class="dot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="choose-card">
+                    <div class="choose-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div class="choose-content">
+                        <h3>Emplacements Premium</h3>
+                        <p>Des salles situées dans les zones les plus prestigieuses et accessibles d'Algérie.</p>
+                        <ul class="choose-list">
+                            <li><i class="fas fa-check"></i> Centres-villes</li>
+                            <li><i class="fas fa-check"></i> Quartiers d'affaires</li>
+                            <li><i class="fas fa-check"></i> Accès facile</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="choose-card active">
+                    <div class="choose-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="choose-content">
+                        <h3>Équipements High-Tech</h3>
+                        <p>Toutes nos salles sont équipées des dernières technologies pour vos réunions.</p>
+                        <ul class="choose-list">
+                            <li><i class="fas fa-check"></i> Projecteurs 4K</li>
+                            <li><i class="fas fa-check"></i> Système audio Dolby</li>
+                            <li><i class="fas fa-check"></i> Wifi haut débit</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="choose-card">
+                    <div class="choose-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="choose-content">
+                        <h3>Service Premium</h3>
+                        <p>Une équipe dédiée pour assurer le succès de vos événements.</p>
+                        <ul class="choose-list">
+                            <li><i class="fas fa-check"></i> Support 24/7</li>
+                            <li><i class="fas fa-check"></i> Assistance technique</li>
+                            <li><i class="fas fa-check"></i> Service conciergerie</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<!-- Section CTA Premium -->
+<section class="cta-premium-section">
+    <div class="cta-background">
+        <div class="cta-gradient"></div>
+        <div class="cta-particles">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+        </div>
+    </div>
+    
+    <div class="container position-relative">
+        <div class="cta-content text-center">
+            <div class="cta-badge">
+                <i class="fas fa-star"></i>
+                <span><%= stats && stats.totalRooms ? stats.totalRooms : 0 %> salles disponibles</span>
+            </div>
+            
+            <h2 class="cta-title">
+                Prêt à réserver votre
+                <span class="highlight">espace idéal</span> ?
+            </h2>
+            
+            <p class="cta-subtitle">
+                Trouvez et réservez la salle parfaite pour vos événements professionnels en quelques clics
+            </p>
+            
+            <div class="cta-features-grid">
+                <div class="cta-feature-item">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <span>Réservation instantanée</span>
+                </div>
+                <div class="cta-feature-item">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <span>Paiement 100% sécurisé</span>
+                </div>
+                <div class="cta-feature-item">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <span>Support 24h/24</span>
+                </div>
+                <div class="cta-feature-item">
+                    <div class="feature-icon-wrapper">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <span>Annulation flexible</span>
+                </div>
+            </div>
+            
+            <div class="cta-price-highlight">
+                <div class="price-circle">
+                    <span class="price-from">À partir de</span>
+                    <span class="price-value"><%= stats && stats.minPrice ? parseInt(stats.minPrice) : 0 %><small>DA</small></span>
+                    <span class="price-unit">/jour</span>
+                </div>
+            </div>
+            
+            <div class="cta-buttons">
+                <a href="/rooms" class="cta-btn-primary">
+                    <span>Explorer les salles</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="/register" class="cta-btn-secondary">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Créer un compte gratuit</span>
+                </a>
+            </div>
+            
+            <div class="cta-trust">
+                <div class="trust-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Sans engagement</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Inscription gratuite</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Confirmation immédiate</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

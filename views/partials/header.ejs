@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoomRental | Location de Salles Professionnelles en Algérie</title>
+    <meta name="description" content="Louez des salles de réunion, conférence et événements professionnels en Algérie. Réservation en ligne simple et rapide.">
+    <!-- Google Fonts Polices -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (icônes) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <!-- Leaflet CSS pour les cartes -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/custom.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">Room<span>Rental</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'home' ? 'active' : '' %>" href="/">
+                            <i class="fas fa-home me-1"></i>Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'rooms' ? 'active' : '' %>" href="/rooms">
+                            <i class="fas fa-door-open me-1"></i>Salles
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <% if (user.type === 'admin') { %>
+                            <li class="nav-item">
+                                <a class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'admin-dashboard' ? 'active' : '' %>" href="/admin/dashboard">
+                                    <i class="fas fa-shield-alt me-1"></i>Administration
+                                </a>
+                            </li>
+                        <% } else if (user.type === 'owner') { %>
+                            <li class="nav-item">
+                                <a class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'owner-dashboard' ? 'active' : '' %>" href="/owner/dashboard">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                            </li>
+                        <% } else if (user.type === 'client') { %>
+                            <li class="nav-item">
+                                <a class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'client-dashboard' ? 'active' : '' %>" href="/client/dashboard">
+                                    <i class="fas fa-user me-1"></i>Dashboard
+                                </a>
+                            </li>
+                        <% } %>
+                        <li class="nav-item user-menu">
+                            <span class="user-name">
+                                <i class="fas fa-user-circle me-1"></i>
+                                <%= user.name %>
+                            </span>
+                            <button onclick="handleLogout()" class="btn-logout">
+                                <i class="fas fa-sign-out-alt me-1"></i>
+                                Déconnexion
+                            </button>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link nav-btn btn-login" href="/login">
+                                <i class="fas fa-sign-in-alt me-1"></i>
+                                Connexion
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-btn btn-register" href="/register">
+                                <i class="fas fa-user-plus me-1"></i>
+                                Inscription
+                            </a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        // Gestion de la déconnexion
+        function handleLogout() {
+            fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    console.error('Erreur lors de la déconnexion');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+        }
+    </script>
+    <script src="/js/animations.js"></script>

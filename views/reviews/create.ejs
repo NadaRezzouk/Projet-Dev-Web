@@ -1,0 +1,566 @@
+<%- include('../partials/header') %>
+
+<!-- Additional Fonts for Professional Review Page -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* Professional Typography System */
+.professional-typography {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Page Title - Elegant Serif */
+.page-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 3.5rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #1a365d;
+}
+
+/* Section Titles - Modern Sans */
+.section-header .section-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.01em !important;
+    color: white !important;
+}
+
+.section-header .section-title i {
+    font-size: 0.9rem !important;
+}
+
+.section-header {
+    margin-bottom: 1rem !important;
+}
+
+.section-header.dark-bg {
+    background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%) !important;
+    padding: 1rem 1.5rem !important;
+    border-radius: 0.5rem !important;
+}
+}
+}
+
+/* Body Text - Clean and Readable */
+.body-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4a5568;
+}
+
+/* Labels and Form Text */
+.form-label-professional {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+/* Rating Labels */
+.rating-label-professional {
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+    color: #718096;
+    margin-top: 1rem;
+}
+
+/* Criteria Labels */
+.criteria-label-professional {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+/* Criteria Items */
+.criteria-item {
+    background: #f8f9fa !important;
+    padding: 1rem !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 1rem !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Button Text */
+.button-text-professional {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Small Text */
+.small-text-professional {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #718096;
+}
+
+/* Card Headers */
+.card-header-professional {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: white;
+}
+
+/* Subtitles */
+.subtitle-professional {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+</style>
+
+<div class="container mt-5 mb-5 professional-typography">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h1 class="page-title mb-3">
+                    <i class="fas fa-star-half-alt me-3" style="color: #fbbf24;"></i>
+                    Évaluation de Service
+                </h1>
+                <p class="body-text lead">Votre retour d'expérience nous aide à maintenir l'excellence de nos services</p>
+            </div>
+
+            <div class="card shadow-lg border-0 rounded-4 professional-card">
+                <!-- Card Header with Progress -->
+                <div class="card-header bg-gradient-professional text-white py-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h4 class="card-header-professional mb-1">
+                                <i class="fas fa-building me-2"></i>
+                                <%= room.name %>
+                            </h4>
+                            <p class="subtitle-professional mb-0">Évaluation professionnelle de votre expérience</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-5">
+                    <form action="/bookings/<%= booking.id %>/review" method="POST" id="reviewForm">
+                        <!-- Overall Rating Section -->
+                        <div class="rating-section mb-5">
+                            <div class="section-header">
+                                <h5 class="fw-bold text-dark mb-3">
+                                </h5>
+                            </div>
+
+                            <div class="rating-container text-center mb-4">
+                                <div class="star-rating mb-3" id="overallRating">
+                                    <i class="far fa-star" data-rating="1"></i>
+                                    <i class="far fa-star" data-rating="2"></i>
+                                    <i class="far fa-star" data-rating="3"></i>
+                                    <i class="far fa-star" data-rating="4"></i>
+                                    <i class="far fa-star" data-rating="5"></i>
+                                </div>
+                                <div class="rating-label rating-label-professional" id="ratingLabel">Cliquez sur les étoiles pour noter</div>
+                                <input type="hidden" name="rating" id="ratingInput" required>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Criteria -->
+                        <div class="criteria-section mb-5">
+                            <div class="section-header dark-bg">
+                                <h5 class="section-title mb-3">
+                                    <i class="fas fa-clipboard-check text-primary me-2"></i>
+                                    Évaluation Détaillée
+                                </h5>
+                            </div>
+
+                            <div class="criteria-grid">
+                                <!-- Propreté -->
+                                <div class="criteria-item">
+                                    <div class="criteria-label-professional">
+                                        <i class="fas fa-broom text-info me-2"></i>
+                                        <span>Propreté & Hygiène</span>
+                                    </div>
+                                    <div class="criteria-rating">
+                                        <div class="mini-star-rating" data-criteria="cleanliness">
+                                            <i class="far fa-star" data-rating="1"></i>
+                                            <i class="far fa-star" data-rating="2"></i>
+                                            <i class="far fa-star" data-rating="3"></i>
+                                            <i class="far fa-star" data-rating="4"></i>
+                                            <i class="far fa-star" data-rating="5"></i>
+                                        </div>
+                                        <input type="hidden" name="cleanliness" class="criteria-input">
+                                    </div>
+                                </div>
+
+                                <!-- Équipement -->
+                                <div class="criteria-item">
+                                    <div class="criteria-label-professional">
+                                        <i class="fas fa-tools text-success me-2"></i>
+                                        <span>Équipement & Matériel</span>
+                                    </div>
+                                    <div class="criteria-rating">
+                                        <div class="mini-star-rating" data-criteria="equipment">
+                                            <i class="far fa-star" data-rating="1"></i>
+                                            <i class="far fa-star" data-rating="2"></i>
+                                            <i class="far fa-star" data-rating="3"></i>
+                                            <i class="far fa-star" data-rating="4"></i>
+                                            <i class="far fa-star" data-rating="5"></i>
+                                        </div>
+                                        <input type="hidden" name="equipment" class="criteria-input">
+                                    </div>
+                                </div>
+
+                                <!-- Service -->
+                                <div class="criteria-item">
+                                    <div class="criteria-label-professional">
+                                        <i class="fas fa-user-tie text-primary me-2"></i>
+                                        <span>Service Client</span>
+                                    </div>
+                                    <div class="criteria-rating">
+                                        <div class="mini-star-rating" data-criteria="service">
+                                            <i class="far fa-star" data-rating="1"></i>
+                                            <i class="far fa-star" data-rating="2"></i>
+                                            <i class="far fa-star" data-rating="3"></i>
+                                            <i class="far fa-star" data-rating="4"></i>
+                                            <i class="far fa-star" data-rating="5"></i>
+                                        </div>
+                                        <input type="hidden" name="service" class="criteria-input">
+                                    </div>
+                                </div>
+
+                                <!-- Localisation -->
+                                <div class="criteria-item">
+                                    <div class="criteria-label-professional">
+                                        <i class="fas fa-map-marker-alt text-warning me-2"></i>
+                                        <span>Accessibilité & Localisation</span>
+                                    </div>
+                                    <div class="criteria-rating">
+                                        <div class="mini-star-rating" data-criteria="location">
+                                            <i class="far fa-star" data-rating="1"></i>
+                                            <i class="far fa-star" data-rating="2"></i>
+                                            <i class="far fa-star" data-rating="3"></i>
+                                            <i class="far fa-star" data-rating="4"></i>
+                                            <i class="far fa-star" data-rating="5"></i>
+                                        </div>
+                                        <input type="hidden" name="location" class="criteria-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Comment Section -->
+                        <div class="comment-section mb-5">
+                            <div class="section-header dark-bg">
+                                <h5 class="section-title mb-3">
+                                    <i class="fas fa-comments text-primary me-2"></i>
+                                    Commentaires Détaillés
+                                </h5>
+                            </div>
+
+                            <div class="comment-input-professional">
+                                <textarea
+                                    name="comment"
+                                    class="form-control professional-textarea"
+                                    rows="6"
+                                    placeholder="Décrivez votre expérience professionnelle avec cette salle. Quels aspects vous ont particulièrement satisfait ? Quelles améliorations suggéreriez-vous pour optimiser nos services ?"
+                                    required
+                                ></textarea>
+                                <div class="textarea-footer mt-2">
+                                    <small class="small-text-professional">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Vos commentaires sont confidentiels et nous aident à maintenir des standards d'excellence.
+                                    </small>
+                                    <div class="char-counter">
+                                        <span id="charCount">0</span>/500 caractères
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Submit -->
+                        <div class="submit-section">
+                            <div class="terms-section mb-4 p-3 bg-light rounded-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                    <label class="form-check-label small small-text-professional" for="termsCheck">
+                                        J'accepte que mon évaluation soit publiée de manière anonyme pour aider d'autres professionnels dans leur choix.
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons d-flex gap-3 justify-content-center">
+                                <button type="submit" class="btn btn-professional btn-lg px-5 py-3 rounded-pill shadow-sm button-text-professional" id="submitBtn" disabled>
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Soumettre l'Évaluation
+                                </button>
+                                <a href="/client/dashboard" class="btn btn-outline-professional btn-lg px-5 py-3 rounded-pill button-text-professional">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Retour au Tableau de Bord
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-professional {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important;
+}
+
+.professional-card {
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+/* Star Rating */
+.star-rating, .mini-star-rating {
+    display: inline-flex;
+    gap: 5px;
+}
+
+.star-rating i, .mini-star-rating i {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mini-star-rating i {
+    font-size: 1.2rem;
+}
+
+.star-rating i:hover, .star-rating i.active,
+.mini-star-rating i:hover, .mini-star-rating i.active {
+    color: #ffc107;
+    transform: scale(1.1);
+}
+
+.rating-label {
+    font-weight: 500;
+    color: #6c757d;
+    margin-top: 10px;
+}
+
+/* Criteria Grid */
+.criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .criteria-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.criteria-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.criteria-item:hover {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+}
+
+.criteria-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #495057;
+}
+
+.criteria-rating {
+    display: flex;
+    align-items: center;
+}
+
+/* Professional Textarea */
+.professional-textarea {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.professional-textarea:focus {
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.textarea-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.char-counter {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* Professional Buttons */
+.btn-professional {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-professional:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+}
+
+.btn-outline-professional {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-professional:hover {
+    background: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2);
+}
+
+/* Section Headers */
+.section-header {
+    padding-bottom: 0.5rem;
+}
+
+.section-header h5 {
+    color: #212529;
+}
+</style>
+
+<script>
+// Star Rating Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const overallRating = document.getElementById('overallRating');
+    const ratingInput = document.getElementById('ratingInput');
+    const ratingLabel = document.getElementById('ratingLabel');
+    const submitBtn = document.getElementById('submitBtn');
+    const termsCheck = document.getElementById('termsCheck');
+    const charCount = document.getElementById('charCount');
+    const commentTextarea = document.querySelector('textarea[name="comment"]');
+
+    const ratingLabels = {
+        1: 'Très insatisfait',
+        2: 'Insatisfait',
+        3: 'Satisfait',
+        4: 'Très satisfait',
+        5: 'Excellent'
+    };
+
+    // Overall Rating
+    overallRating.addEventListener('click', function(e) {
+        if (e.target.tagName === 'I') {
+            const rating = parseInt(e.target.dataset.rating);
+            ratingInput.value = rating;
+            updateStars(overallRating, rating);
+            ratingLabel.textContent = ratingLabels[rating];
+            updateProgress();
+        }
+    });
+
+    // Criteria Ratings
+    document.querySelectorAll('.mini-star-rating').forEach(rating => {
+        rating.addEventListener('click', function(e) {
+            if (e.target.tagName === 'I') {
+                const criteria = this.dataset.criteria;
+                const value = parseInt(e.target.dataset.rating);
+                const input = this.parentElement.querySelector('.criteria-input');
+                input.value = value;
+                updateStars(this, value);
+                updateProgress();
+            }
+        });
+    });
+
+    function updateStars(container, rating) {
+        const stars = container.querySelectorAll('i');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.remove('far');
+                star.classList.add('fas', 'active');
+            } else {
+                star.classList.remove('fas', 'active');
+                star.classList.add('far');
+            }
+        });
+    }
+
+    function updateProgress() {
+        // Enable submit if all required fields are filled
+        const allFilled = ratingInput.value && termsCheck.checked;
+        submitBtn.disabled = !allFilled;
+    }
+
+    // Character Counter
+    commentTextarea.addEventListener('input', function() {
+        const count = this.value.length;
+        charCount.textContent = count;
+        charCount.style.color = count > 450 ? '#dc3545' : '#6c757d';
+    });
+
+    // Terms Check
+    termsCheck.addEventListener('change', updateProgress);
+
+    // Hover Effects
+    overallRating.addEventListener('mouseover', function(e) {
+        if (e.target.tagName === 'I') {
+            const rating = parseInt(e.target.dataset.rating);
+            const stars = this.querySelectorAll('i');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.style.color = '#ffc107';
+                } else {
+                    star.style.color = '#ddd';
+                }
+            });
+        }
+    });
+
+    overallRating.addEventListener('mouseout', function() {
+        if (!ratingInput.value) {
+            const stars = this.querySelectorAll('i');
+            stars.forEach(star => star.style.color = '#ddd');
+        }
+    });
+});
+</script>
+
+<%- include('../partials/footer') %>

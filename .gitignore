@@ -1,0 +1,8 @@
+# Node
+node_modules/
+.env
+/uploads
+.DS_Store
+npm-debug.log
+test-db.js
+create-user.js
