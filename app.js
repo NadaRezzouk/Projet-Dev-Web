@@ -267,6 +267,26 @@ app.get('/rooms', async (req, res) => {
 });
 
 
+// Route pour afficher la carte des salles
+// GET /map — carte interactive des salles
+app.get('/map', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT id, name, wilaya, location, lat, lng, price, capacity, image FROM rooms WHERE lat IS NOT NULL AND lng IS NOT NULL');
+    
+    const rooms = rows.map(r => ({
+      ...r,
+      lat: parseFloat(r.lat) || 36.7538,
+      lng: parseFloat(r.lng) || 3.0588
+    }));
+
+    res.render('map', { rooms, activePage: 'map' });
+  } catch (error) {
+    console.error('Erreur fetch map:', error);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+
 // Route pour afficher le formulaire de réservation d'une salle
 // GET /rooms/:id — détail d'une room + récupérer avis approuvés
 app.get('/rooms/:id', async (req, res) => {
@@ -1138,7 +1158,7 @@ app.post('/bookings/:id/review', verifyToken, async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);
 });
