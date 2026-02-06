@@ -280,6 +280,10 @@ app.get('/rooms/:id', async (req, res) => {
     try { equipment = roomRow.equipment ? JSON.parse(roomRow.equipment) : []; } catch(e){}
     try { amenities = roomRow.amenities ? JSON.parse(roomRow.amenities) : []; } catch(e){}
 
+    // Valeurs par défaut pour les coordonnées si elles sont nulles ou invalides
+    roomRow.lat = parseFloat(roomRow.lat) || 36.7538;
+    roomRow.lng = parseFloat(roomRow.lng) || 3.0588;
+
     const room = { ...roomRow, equipment, amenities };
 
     const [reviewRows] = await db.query('SELECT * FROM reviews WHERE roomId = ? AND isApproved = 1 ORDER BY date DESC', [roomId]);
@@ -476,6 +480,11 @@ app.get('/client/dashboard', verifyToken, async (req, res) => {
       let equipment = [], amenities = [];
       try { equipment = r.equipment ? JSON.parse(r.equipment) : []; } catch (e) {}
       try { amenities = r.amenities ? JSON.parse(r.amenities) : []; } catch (e) {}
+      
+      // Valeurs par défaut pour les coordonnées
+      if (r.lat === null || r.lat === undefined) r.lat = 36.7538;
+      if (r.lng === null || r.lng === undefined) r.lng = 3.0588;
+      
       return { ...r, equipment, amenities };
     });
 
@@ -889,7 +898,7 @@ app.get('/owner/add-room', verifyToken, isOwner, (req, res) => {
 app.post('/owner/add-room', verifyToken, isOwner, upload.single('image'), async (req, res) => {
   try {
     const ownerId = req.user.id;
-    const { name, description, capacity, price, location, wilaya } = req.body;
+    const { name, description, capacity, price, location, wilaya, lat, lng } = req.body;
 
     const equipmentArray = req.body.equipment ? (Array.isArray(req.body.equipment) ? req.body.equipment : [req.body.equipment]) : [];
     const amenitiesArray = req.body.amenities ? (Array.isArray(req.body.amenities) ? req.body.amenities : [req.body.amenities]) : [];
@@ -897,9 +906,9 @@ app.post('/owner/add-room', verifyToken, isOwner, upload.single('image'), async 
     const imagePath = req.file ? `/uploads/${req.file.filename}` : '/images/default-room.jpg';
 
     await db.query(
-      `INSERT INTO rooms (ownerId, name, description, capacity, price, image, location, wilaya, equipment, amenities)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [ownerId, name, description, capacity, price, imagePath, location, wilaya, JSON.stringify(equipmentArray), JSON.stringify(amenitiesArray)]
+      `INSERT INTO rooms (ownerId, name, description, capacity, price, image, location, wilaya, lat, lng, equipment, amenities)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [ownerId, name, description, capacity, price, imagePath, location, wilaya, (lat !== undefined && lat !== null && lat !== '') ? lat : 36.7538, (lng !== undefined && lng !== null && lng !== '') ? lng : 3.0588, JSON.stringify(equipmentArray), JSON.stringify(amenitiesArray)]
     );
 
     res.redirect('/owner/dashboard');
@@ -927,7 +936,14 @@ app.get('/owner/edit-room/:id', verifyToken, isOwner, async (req, res) => {
     try { equipment = roomRow.equipment ? JSON.parse(roomRow.equipment) : []; } catch(e){}
     try { amenities = roomRow.amenities ? JSON.parse(roomRow.amenities) : []; } catch(e){}
 
+    // Valeurs par défaut pour les coordonnées si elles sont nulles ou invalides
+    roomRow.lat = parseFloat(roomRow.lat) || 36.7538;
+    roomRow.lng = parseFloat(roomRow.lng) || 3.0588;
+
     const room = { ...roomRow, equipment, amenities };
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     res.render('owner/edit-room', { room });
   } catch (err) {
     console.error('Erreur GET edit-room:', err);
@@ -937,33 +953,42 @@ app.get('/owner/edit-room/:id', verifyToken, isOwner, async (req, res) => {
 
 // POST /owner/edit-room/:id 
 // POST /owner/edit-room/:id — mise à jour en base (avec location & wilaya)
-app.post('/owner/edit-room/:id', verifyToken, isOwner, upload.single('image'), async (req, res) => {
+app.post('/owner/edit-room/:id', verifyToken, isOwner, upload.any(), async (req, res) => {
   try {
     const roomId = parseInt(req.params.id, 10);
-    const [roomRows] = await db.query('SELECT ownerId, image FROM rooms WHERE id = ?', [roomId]);
+    const [roomRows] = await db.query('SELECT ownerId, image, lat, lng FROM rooms WHERE id = ?', [roomId]);
     if (roomRows.length === 0) return res.status(404).send('Salle non trouvée');
 
     const current = roomRows[0];
     if (current.ownerId !== req.user.id) return res.status(403).send('Accès refusé');
 
-    const { name, description, capacity, price, location, wilaya } = req.body;
+    const { name, description, capacity, price, location, wilaya, lat, lng } = req.body;
+    console.log('DEBUG: req.body complet:', JSON.stringify(req.body, null, 2));
+    console.log('DEBUG: Valeurs extraites - lat:', lat, 'lng:', lng, 'types:', typeof lat, typeof lng);
+
+    // Utiliser les valeurs actuelles si les nouvelles ne sont pas fournies
+    const newLat = (lat !== undefined && lat !== null && lat !== '') ? parseFloat(lat) : parseFloat(current.lat || 36.7538);
+    const newLng = (lng !== undefined && lng !== null && lng !== '') ? parseFloat(lng) : parseFloat(current.lng || 3.0588);
+
+    console.log('DEBUG: Nouvelles valeurs - newLat:', newLat, 'newLng:', newLng);
 
     const equipmentArray = req.body.equipment ? (Array.isArray(req.body.equipment) ? req.body.equipment : [req.body.equipment]) : [];
     const amenitiesArray = req.body.amenities ? (Array.isArray(req.body.amenities) ? req.body.amenities : [req.body.amenities]) : [];
 
     let imagePath = current.image || '/images/default-room.jpg';
-    if (req.file) {
+    const imageFile = req.files ? req.files.find(f => f.fieldname === 'image') : null;
+    if (imageFile) {
       if (imagePath && imagePath !== '/images/default-room.jpg') {
         const oldImagePath = path.join(__dirname, 'public', imagePath.replace(/^\//, ''));
         if (fs.existsSync(oldImagePath)) {
           try { fs.unlinkSync(oldImagePath); } catch (e) { console.warn(e); }
         }
       }
-      imagePath = `/uploads/${req.file.filename}`;
+      imagePath = `/uploads/${imageFile.filename}`;
     }
 
     await db.query(
-      `UPDATE rooms SET name = ?, description = ?, capacity = ?, price = ?, image = ?, location = ?, wilaya = ?, equipment = ?, amenities = ?
+      `UPDATE rooms SET name = ?, description = ?, capacity = ?, price = ?, image = ?, location = ?, wilaya = ?, lat = ?, lng = ?, equipment = ?, amenities = ?
        WHERE id = ?`,
       [
         name,
@@ -973,11 +998,19 @@ app.post('/owner/edit-room/:id', verifyToken, isOwner, upload.single('image'), a
         imagePath,
         location,
         wilaya,
+        newLat,
+        newLng,
         JSON.stringify(equipmentArray),
         JSON.stringify(amenitiesArray),
         roomId
       ]
     );
+
+    console.log('DEBUG: UPDATE exécuté pour roomId:', roomId);
+
+    // Vérifier la mise à jour
+    const [checkRows] = await db.query('SELECT lat, lng FROM rooms WHERE id = ?', [roomId]);
+    console.log('DEBUG: Valeurs après UPDATE:', checkRows[0]);
 
     res.redirect('/owner/dashboard?updated=1');
   } catch (err) {
@@ -1094,7 +1127,7 @@ app.post('/bookings/:id/review', verifyToken, async (req, res) => {
 
     await db.query(
       `INSERT INTO reviews (bookingId, roomId, userId, userName, roomName, rating, comment, isApproved)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
       [bookingId, roomId, userId, userName, roomName, parseInt(rating,10), comment]
     );
 
@@ -1105,7 +1138,7 @@ app.post('/bookings/:id/review', verifyToken, async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);
 });

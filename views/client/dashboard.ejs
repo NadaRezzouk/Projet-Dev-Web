@@ -86,7 +86,7 @@
     </header>
 
     <!-- Section Recherche -->
-    <section id="searchRooms" class="dashboard-section">
+    <section id="searchRooms" class="dashboard-section hidden">
       <div class="section-header">
         <div class="section-title">
           <div class="title-icon"><i class="fas fa-search"></i></div>
@@ -97,7 +97,68 @@
         </div>
       </div>
 
-      
+      <!-- Filtres Premium -->
+      <div class="filter-card">
+          <form id="searchForm" class="filter-form">
+              <div class="filter-row">
+                  <div class="filter-group main-search">
+                      <label class="filter-label">
+                          <i class="fas fa-search me-2"></i>Recherche
+                      </label>
+                      <div class="input-wrapper">
+                          <input type="text" class="form-control premium-input" id="searchQuery" placeholder="Nom, description, équipements...">
+                          <span class="input-icon"><i class="fas fa-search"></i></span>
+                      </div>
+                  </div>
+              </div>
+              <div class="filter-row">
+                  <div class="filter-group">
+                      <label class="filter-label">
+                          <i class="fas fa-coins me-2"></i>Prix min (DA)
+                      </label>
+                      <input type="number" class="form-control premium-input" id="minPrice" min="0" placeholder="0">
+                  </div>
+                  <div class="filter-group">
+                      <label class="filter-label">
+                          <i class="fas fa-coins me-2"></i>Prix max (DA)
+                      </label>
+                      <input type="number" class="form-control premium-input" id="maxPrice" min="0" placeholder="∞">
+                  </div>
+                  <div class="filter-group">
+                      <label class="filter-label">
+                          <i class="fas fa-users me-2"></i>Capacité min
+                      </label>
+                      <input type="number" class="form-control premium-input" id="minCapacity" min="1" placeholder="1">
+                  </div>
+                  <div class="filter-group">
+                      <label class="filter-label">
+                          <i class="fas fa-calendar me-2"></i>Date
+                      </label>
+                      <input type="date" class="form-control premium-input" id="searchDate">
+                  </div>
+              </div>
+              <div class="filter-row equipment-filters">
+                  <span class="filter-label-inline"><i class="fas fa-tools me-2"></i>Équipements:</span>
+                  <div class="checkbox-group">
+                      <label class="premium-checkbox">
+                          <input type="checkbox" id="hasWifi" value="wifi">
+                          <span class="checkmark"></span>
+                          <i class="fas fa-wifi"></i> WiFi
+                      </label>
+                      <label class="premium-checkbox">
+                          <input type="checkbox" id="hasProjector" value="projector">
+                          <span class="checkmark"></span>
+                          <i class="fas fa-video"></i> Vidéoprojecteur
+                      </label>
+                      <label class="premium-checkbox">
+                          <input type="checkbox" id="hasAC" value="ac">
+                          <span class="checkmark"></span>
+                          <i class="fas fa-snowflake"></i> Climatisation
+                      </label>
+                  </div>
+              </div>
+          </form>
+      </div>
 
       <!-- Résultats -->
       <div class="results-header">
@@ -110,7 +171,7 @@
 
       <div class="rooms-grid" id="searchResults">
         <% (rooms || []).forEach(function(room) { %>
-          <div class="premium-room-card room-card" data-aos="fade-up">
+          <div class="premium-room-card room-card" data-aos="fade-up" data-price="<%= room.price %>" data-capacity="<%= room.capacity %>" data-name="<%= room.name %>" data-description="<%= room.description %>" data-equipment="<%= (room.equipment || []).join(',') %>">
             <div class="room-card-image">
               <img src="<%= room.image %>" alt="<%= room.name %>">
               <div class="room-card-overlay">
@@ -142,7 +203,7 @@
     </section>
 
     <!-- Carte -->
-    <section id="mapView" class="dashboard-section" style="display: none;">
+    <section id="mapView" class="dashboard-section hidden">
       <div class="section-header">
         <div class="section-title">
           <div class="title-icon"><i class="fas fa-map-marked-alt"></i></div>
@@ -173,7 +234,7 @@
 
         <div class="map-main">
           <div class="map-container-premium">
-            <div id="map" style="height:400px;"></div>
+            <div id="map" style="height:100%;"></div>
             <div class="map-controls">
               <button class="map-control-btn" id="mapZoomIn" title="Zoom +"><i class="fas fa-plus"></i></button>
               <button class="map-control-btn" id="mapZoomOut" title="Zoom -"><i class="fas fa-minus"></i></button>
@@ -185,7 +246,7 @@
     </section>
 
     <!-- Mes Réservations -->
-    <section id="myBookings" class="dashboard-section" style="display: none;">
+    <section id="myBookings" class="dashboard-section hidden">
       <div class="section-header">
         <div class="section-title"><div class="title-icon"><i class="fas fa-calendar-alt"></i></div><div><h2>Mes réservations</h2><p class="section-subtitle">Suivez et gérez vos réservations</p></div></div>
       </div>
@@ -285,7 +346,7 @@
     </section>
 
     <!-- Mes Avis -->
-    <section id="myReviews" class="dashboard-section" style="display: none;">
+    <section id="myReviews" class="dashboard-section hidden">
       <div class="section-header">
         <div class="section-title"><div class="title-icon"><i class="fas fa-star"></i></div><div><h2>Mes avis</h2><p class="section-subtitle">Vos retours d'expérience</p></div></div>
       </div>
@@ -372,36 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (modalEl.parentNode !== document.body) document.body.appendChild(modalEl);
   });
 
-  // Sidebar navigation
-  const sidebarLinks = document.querySelectorAll('.dashboard-sidebar .nav-link');
-  const mainSections = document.querySelectorAll('.dashboard-main section');
-  function showSectionById(id) {
-    mainSections.forEach(section => section.style.display = 'none');
-    const target = document.getElementById(id);
-    if (target) {
-      target.style.display = 'block';
-      if (id === 'mapView' && typeof map !== 'undefined') setTimeout(() => map.invalidateSize(), 120);
-    }
-    sidebarLinks.forEach(l => l.classList.remove('active'));
-    const link = Array.from(sidebarLinks).find(l => l.getAttribute('href') === `#${id}`);
-    if (link) link.classList.add('active');
-  }
-  if (sidebarLinks.length) {
-    sidebarLinks.forEach(link => link.addEventListener('click', function(e) {
-      e.preventDefault();
-      const href = this.getAttribute('href') || '';
-      const id = href.startsWith('#') ? href.substring(1) : href;
-      if (!id) return;
-      showSectionById(id);
-      if (history && history.replaceState) history.replaceState(null, '', `#${id}`);
-    }));
-  }
-  const initialHash = (location.hash || '').replace('#','') || 'searchRooms';
-  showSectionById(initialHash);
-
- 
-
-  // Map init (protected)
+  // Map init (protected) - moved before navigation to fix refresh issue
   let map;
   const markers = {};
   const mapEl = document.getElementById('map');
@@ -439,12 +471,93 @@ document.addEventListener('DOMContentLoaded', function () {
     <% } %>
   <% }); %>
 
+  // Sidebar navigation
+  const sidebarLinks = document.querySelectorAll('.dashboard-sidebar .nav-link');
+  const mainSections = document.querySelectorAll('.dashboard-main section');
+  function showSectionById(id) {
+    mainSections.forEach(section => section.classList.add('hidden'));
+    const target = document.getElementById(id);
+    if (target) {
+      target.classList.remove('hidden');
+      if (id === 'mapView' && typeof map !== 'undefined') setTimeout(() => map.invalidateSize(), 120);
+    }
+    sidebarLinks.forEach(l => l.classList.remove('active'));
+    const link = Array.from(sidebarLinks).find(l => l.getAttribute('href') === `#${id}`);
+    if (link) link.classList.add('active');
+  }
+  if (sidebarLinks.length) {
+    sidebarLinks.forEach(link => link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const href = this.getAttribute('href') || '';
+      const id = href.startsWith('#') ? href.substring(1) : href;
+      if (!id) return;
+      showSectionById(id);
+      if (history && history.replaceState) history.replaceState(null, '', `#${id}`);
+    }));
+  }
+  const initialHash = (location.hash || '').replace('#','') || 'searchRooms';
+  showSectionById(initialHash);
+
+  // Fonction de filtrage des salles
+  function filterRooms() {
+      const query = document.getElementById('searchQuery').value.toLowerCase();
+      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+      const minCapacity = parseInt(document.getElementById('minCapacity').value) || 0;
+      const date = document.getElementById('searchDate').value;
+      const wifi = document.getElementById('hasWifi').checked;
+      const projector = document.getElementById('hasProjector').checked;
+      const ac = document.getElementById('hasAC').checked;
+
+      let visibleCount = 0;
+      document.querySelectorAll('.room-card').forEach(card => {
+          const price = parseFloat(card.dataset.price) || 0;
+          const capacity = parseInt(card.dataset.capacity) || 0;
+          const name = (card.dataset.name || '').toLowerCase();
+          const desc = (card.dataset.description || '').toLowerCase();
+          const equipment = (card.dataset.equipment || '').toLowerCase();
+
+          let show = true;
+
+          if (query && !name.includes(query) && !desc.includes(query) && !equipment.includes(query)) show = false;
+          if (price < minPrice || price > maxPrice) show = false;
+          if (capacity < minCapacity) show = false;
+          if (wifi && !equipment.includes('wifi')) show = false;
+          if (projector && !equipment.includes('vidéoprojecteur')) show = false;
+          if (ac && !equipment.includes('climatisation')) show = false;
+
+          card.style.display = show ? 'block' : 'none';
+          if (show) visibleCount++;
+      });
+
+      // Update results count
+      document.querySelector('.results-count').textContent = `${visibleCount} salles trouvées`;
+  }
+
+  // Écouteurs d'événements pour les filtres
+  document.querySelectorAll('#searchForm input').forEach(input => {
+      input.addEventListener('change', filterRooms);
+      input.addEventListener('keyup', filterRooms);
+  });
+
   // Map/list interaction
     document.querySelectorAll('.map-room-item').forEach(item => {
     item.addEventListener('click', function() {
         const lat = parseFloat(this.dataset.lat), lng = parseFloat(this.dataset.lng), roomId = this.dataset.roomId;
-        if (!isNaN(lat) && !isNaN(lng) && map) { map.setView([lat, lng], 15, { animate: true }); if (markers[roomId]) markers[roomId].openPopup(); }
-        document.querySelectorAll('.map-room-item').forEach(i => i.classList.remove('active')); this.classList.add('active');
+        if (!isNaN(lat) && !isNaN(lng) && map) { 
+            // Animation en deux étapes : d'abord dézoomer, puis aller vers la salle
+            map.flyTo([lat, lng], 10, { duration: 1.2 });
+            
+            map.once('moveend', function() {
+                map.flyTo([lat, lng], 13, { duration: 1.5 });
+                
+                map.once('moveend', function() {
+                    if (markers[roomId]) markers[roomId].openPopup();
+                });
+            });
+        }
+        document.querySelectorAll('.map-room-item').forEach(i => i.classList.remove('active')); 
+        this.classList.add('active');
     });
     });
 
@@ -476,6 +589,132 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+
+<!-- Styles pour les marqueurs et popups de la carte -->
+<style>
+.dashboard-section.hidden {
+    display: none;
+}
+
+.custom-map-marker {
+    background: transparent;
+}
+
+.marker-pin {
+    width: 40px;
+    height: 40px;
+    border-radius: 50% 50% 50% 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
+    animation: marker-bounce 0.5s ease-out;
+}
+
+.marker-pin i {
+    transform: rotate(45deg);
+    color: white;
+    font-size: 16px;
+}
+
+@keyframes marker-bounce {
+    0%, 100% { transform: rotate(-45deg) translateY(0); }
+    50% { transform: rotate(-45deg) translateY(-10px); }
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.custom-popup .leaflet-popup-tip {
+    background: rgba(15, 23, 42, 0.95);
+}
+
+.custom-popup .leaflet-popup-content {
+    margin: 0;
+    width: 250px !important;
+}
+
+.map-popup img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.popup-content {
+    padding: 1rem;
+}
+
+.popup-content h5 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 0.5rem;
+}
+
+.popup-location {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0 0 0.25rem;
+}
+
+.popup-location i {
+    color: #8b5cf6;
+    margin-right: 0.25rem;
+}
+
+.popup-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f59e0b;
+    margin: 0 0 0.75rem;
+}
+
+.popup-btn {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.popup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.leaflet-popup-close-button {
+    color: #94a3b8 !important;
+    font-size: 20px !important;
+    padding: 8px !important;
+}
+
+.leaflet-popup-close-button:hover {
+    color: #ffffff !important;
+}
+</style>
+
+<!-- Styles pour la carte -->
+<style>
+.map-container-premium {
+    height: 100%;
+    min-height: 400px;
+}
+</style>
 
 <!-- Quick styles to ensure modal/backdrop z-index is high -->
 <style>
