@@ -289,7 +289,7 @@ app.get('/map', async (req, res) => {
 
 // Route pour afficher le formulaire de réservation d'une salle
 // GET /rooms/:id — détail d'une room + récupérer avis approuvés
-app.get('/rooms/:id', async (req, res) => {
+app.get('/rooms/:id', verifyToken, async (req, res) => {
   try {
     const roomId = parseInt(req.params.id, 10);
     const [roomRows] = await db.query('SELECT * FROM rooms WHERE id = ?', [roomId]);
