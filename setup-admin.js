@@ -53,7 +53,7 @@ async function setup() {
             );
             console.log('✅ Compte administrateur créé');
             console.log('\n' + '='.repeat(50));
-            console.log('📧 Email: admin@roomrental.com');
+            console.log('📧 Email: admin@eventspace.com');
             console.log('🔑 Mot de passe: admin123');
             console.log('⚠️  Changez ce mot de passe après la première connexion!');
             console.log('='.repeat(50));
