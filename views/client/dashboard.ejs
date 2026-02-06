@@ -12,7 +12,6 @@
             <span>Rechercher</span>
           </a>
         </li>
-      
         <li class="nav-item">
           <a class="nav-link" href="#myBookings" title="Réservations">
             <i class="fas fa-calendar-alt"></i>
@@ -92,7 +91,69 @@
         </div>
       </div>
 
-      
+      <!-- Filtres Premium -->
+      <div class="filter-card">
+          <form id="searchForm" class="filter-form">
+              <div class="filter-row">
+                  <div class="filter-group main-search">
+                      <label class="filter-label">
+                          <i class="fas fa-search me-2"></i>Recherche
+                      </label>
+                      <div class="input-wrapper">
+                          <input type="text" class="form-control premium-input" id="searchQuery" placeholder="Nom, description, équipements...">
+                          <span class="input-icon"><i class="fas fa-search"></i></span>
+                      </div>
+                  </div>
+              </div>
+              <div class="filter-row">
+                  <div class="filter-group">
+                      <label class="filter-label">
+                          <i class="fas fa-coins me-2"></i>Prix min (DA)
+                      </label>
+                      <input type="number" class="form-control premium-input" id="minPrice" min="0" placeholder="0">
+                  </div>
+                  <div class="filter-group">
+                      <label class="filter-label">
+                          <i class="fas fa-coins me-2"></i>Prix max (DA)
+                      </label>
+                      <input type="number" class="form-control premium-input" id="maxPrice" min="0" placeholder="∞">
+                  </div>
+                  <div class="filter-group">
+                      <label class="filter-label">
+                          <i class="fas fa-users me-2"></i>Capacité min
+                      </label>
+                      <input type="number" class="form-control premium-input" id="minCapacity" min="1" placeholder="1">
+                  </div>
+                  <div class="filter-group">
+                      <label class="filter-label">
+                          <i class="fas fa-calendar me-2"></i>Date
+                      </label>
+                      <input type="date" class="form-control premium-input" id="searchDate">
+                  </div>
+              </div>
+              <div class="filter-row equipment-filters">
+                  <span class="filter-label-inline"><i class="fas fa-tools me-2"></i>Équipements:</span>
+                  <div class="checkbox-group">
+                      <label class="premium-checkbox">
+                          <input type="checkbox" id="hasWifi" value="wifi">
+                          <span class="checkmark"></span>
+                          <i class="fas fa-wifi"></i> WiFi
+                      </label>
+                      <label class="premium-checkbox">
+                          <input type="checkbox" id="hasProjector" value="projector">
+                          <span class="checkmark"></span>
+                          <i class="fas fa-video"></i> Vidéoprojecteur
+                      </label>
+                      <label class="premium-checkbox">
+                          <input type="checkbox" id="hasAC" value="ac">
+                          <span class="checkmark"></span>
+                          <i class="fas fa-snowflake"></i> Climatisation
+                      </label>
+                  </div>
+              </div>
+          </form>
+      </div>
+
       <!-- Résultats -->
       <div class="results-header">
         <span class="results-count"><%= (rooms || []).length %> salles trouvées</span>
@@ -134,8 +195,6 @@
         <% }); %>
       </div>
     </section>
-
-   
 
     <!-- Mes Réservations -->
     <section id="myBookings" class="dashboard-section hidden">
@@ -325,44 +384,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (modalEl.parentNode !== document.body) document.body.appendChild(modalEl);
   });
 
-  // Map init (protected) - moved before navigation to fix refresh issue
-  let map;
-  const markers = {};
-  const mapEl = document.getElementById('map');
-  if (mapEl) {
-    try {
-      map = L.map('map', { zoomControl: false }).setView([36.7538, 3.0588], 10);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19 }).addTo(map);
-    } catch (e) {
-      console.warn('Map init failed:', e);
-    }
-  }
-
-  // Add markers safely
-  <% (rooms || []).forEach(function(room) { %>
-    <% if (room.lat != null && room.lng != null) { %>
-      (function(){
-        try {
-          if (typeof L !== 'undefined' && map) {
-            const icon = L.divIcon({ className: 'custom-map-marker', html: '<div class="marker-pin"><i class="fas fa-door-open"></i></div>', iconSize: [40,40], iconAnchor: [20,40], popupAnchor: [0,-40] });
-            const m = L.marker([<%= room.lat %>, <%= room.lng %>], { icon }).bindPopup(`
-              <div class="map-popup">
-                <img src="<%= room.image %>" alt="<%= room.name %>">
-                <div class="popup-content">
-                  <h5><%= room.name %></h5>
-                  <p class="popup-location"><i class="fas fa-map-marker-alt"></i> <%= room.wilaya %></p>
-                  <p class="popup-price"><%= parseInt(room.price || 0) %> DA/jour</p>
-                  <a href="/rooms/<%= room.id %>/book" class="popup-btn">Réserver</a>
-                </div>
-              </div>
-            `, { className: 'custom-popup' }).addTo(map);
-            markers['<%= room.id %>'] = m;
-          }
-        } catch (err) { console.warn('Marker error for room <%= room.id %>:', err); }
-      })();
-    <% } %>
-  <% }); %>
-
   // Sidebar navigation
   const sidebarLinks = document.querySelectorAll('.dashboard-sidebar .nav-link');
   const mainSections = document.querySelectorAll('.dashboard-main section');
@@ -371,7 +392,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const target = document.getElementById(id);
     if (target) {
       target.classList.remove('hidden');
-      if (id === 'mapView' && typeof map !== 'undefined') setTimeout(() => map.invalidateSize(), 120);
     }
     sidebarLinks.forEach(l => l.classList.remove('active'));
     const link = Array.from(sidebarLinks).find(l => l.getAttribute('href') === `#${id}`);
