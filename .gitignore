@@ -8,3 +8,4 @@ test-db.js
 create-owner.js
 create-admin.js
 create-user.js
+db.js
