@@ -1,5 +1,101 @@
 <%- include('partials/header') %>
 
+
+<style>
+  .alert-custom.alert-error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(239,68,68,0.25), 0 1.5px 6px rgba(0,0,0,0.12);
+    padding: 1.4rem 2.2rem;
+    font-size: 1.15rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    position: fixed;
+    left: 50%;
+    top: 18%;
+    transform: translate(-50%, -40px) scale(0.98);
+    z-index: 9999;
+    min-width: 340px;
+    max-width: 90vw;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  .alert-custom.alert-error.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0) scale(1.02);
+    animation: alertDropIn 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .alert-custom .alert-icon {
+    font-size: 2.2rem;
+    color: #fff;
+    background: rgba(220,38,38,0.15);
+    border-radius: 50%;
+    padding: 0.35rem;
+    margin-right: 0.5rem;
+    box-shadow: 0 2px 8px rgba(220,38,38,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .alert-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.7rem;
+    cursor: pointer;
+    margin-left: auto;
+    font-weight: bold;
+    transition: color 0.2s;
+    opacity: 0.7;
+  }
+  .alert-close:hover {
+    color: #ffd6d6;
+    opacity: 1;
+  }
+  @keyframes alertDropIn {
+    0% { opacity: 0; left: 50%; transform: translate(-50%, -40px) scale(0.98); }
+    100% { opacity: 1; left: 50%; transform: translate(-50%, 0) scale(1.02); }
+  }
+</style>
+</style>
+
+<div id="bookingErrorPopup" class="alert-custom alert-error">
+  <span class="alert-icon"><i class="fas fa-exclamation-circle"></i></span>
+  <span id="bookingErrorMsg"></span>
+  <button class="alert-close" onclick="hideBookingErrorPopup()">&times;</button>
+</div>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+  <% if (typeof error !== 'undefined' && error === 'already_booked') { %>
+    showBookingError('Salle déjà réservée pour cette période.');
+  <% } else if (typeof error !== 'undefined' && error === 'capacity_exceeded') { %>
+    showBookingError('Nombre de participants dépasse la capacité de la salle.');
+  <% } %>
+});
+
+function showBookingError(msg) {
+  var popup = document.getElementById('bookingErrorPopup');
+  var msgSpan = document.getElementById('bookingErrorMsg');
+  msgSpan.textContent = msg;
+  popup.classList.add('active');
+  setTimeout(function(){
+    popup.classList.remove('active');
+  }, 4000);
+}
+
+function hideBookingErrorPopup() {
+  var popup = document.getElementById('bookingErrorPopup');
+  popup.classList.remove('active');
+}
+</script>
+
 <div class="container mt-5">
     <div class="row">
         <!-- Détails de la salle -->
@@ -41,10 +137,10 @@
 
           <% if (reviewCount > 0) { %>
             <!-- Note moyenne -->
-            <div class="alert alert-light mb-3">
+            <div class="mb-3 p-3 rounded" style="background-color: #34495e; color: white;">
               <div class="d-flex align-items-center">
-                <h4 class="mb-0 me-2 text-warning"><%= averageRating %>/5</h4>
-                <span class="badge bg-secondary"><%= reviewCount %> avis</span>
+                <h4 class="mb-0 me-2 text-warning" style="font-weight: bold; font-family: 'Arial', sans-serif;"><%= averageRating %>/5</h4>
+                <span class="badge bg-light text-dark"><%= reviewCount %> avis</span>
               </div>
             </div>
 
@@ -84,13 +180,12 @@
                     <form action="/rooms/<%= room.id %>/book" method="POST" id="bookingForm">
                         <div class="mb-3">
                             <label for="startDate" class="form-label">Date de début</label>
-                            <input type="date" class="form-control" id="startDate" name="startDate" required 
-                                   min="<%= new Date().toISOString().split('T')[0] %>">
+                            <input type="text" class="form-control" id="startDate" name="startDate" required>
                         </div>
 
                         <div class="mb-3">
                             <label for="endDate" class="form-label">Date de fin</label>
-                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                            <input type="text" class="form-control" id="endDate" name="endDate" required>
                         </div>
 
                         <div class="mb-3">
@@ -128,24 +223,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalPriceSpan = document.getElementById('totalPrice');
     const pricePerDay = <%= Number(room.price || 0) %>;
 
-   function updateTotalPrice() {
-    const start = startDateInput.value ? new Date(startDateInput.value) : null;
-    const end = endDateInput.value ? new Date(endDateInput.value) : null;
+    // Initialize Flatpickr for start date
+    const startPicker = flatpickr(startDateInput, {
+        dateFormat: "Y-m-d",
+        minDate: new Date(),
+        onChange: function(selectedDates, dateStr, instance) {
+            // Set min date for end date to the selected start date
+            endPicker.set('minDate', selectedDates[0]);
+            updateTotalPrice();
+        }
+    });
 
-    if (start && end && start <= end) {
-      // calcule le nombre de jours inclusifs
-      const diffTime = Math.abs(end - start);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      const totalPrice = diffDays * pricePerDay;
-      totalPriceSpan.textContent = totalPrice.toLocaleString('fr-DZ');
-    } else {
-      totalPriceSpan.textContent = '0';
+    // Initialize Flatpickr for end date
+    const endPicker = flatpickr(endDateInput, {
+        dateFormat: "Y-m-d",
+        minDate: new Date(),
+        onChange: function(selectedDates, dateStr, instance) {
+            updateTotalPrice();
+        }
+    });
+
+    function updateTotalPrice() {
+        const start = startDateInput.value ? new Date(startDateInput.value) : null;
+        const end = endDateInput.value ? new Date(endDateInput.value) : null;
+
+        if (start && end && start <= end) {
+            // Calculate the number of inclusive days
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            const totalPrice = diffDays * pricePerDay;
+            totalPriceSpan.textContent = totalPrice.toLocaleString('fr-DZ');
+        } else {
+            totalPriceSpan.textContent = '0';
+        }
     }
-  }
-
-
-    startDateInput.addEventListener('change', updateTotalPrice);
-    endDateInput.addEventListener('change', updateTotalPrice);
 });
 </script>
 

@@ -1,69 +1,437 @@
 <%- include('../partials/header') %>
 
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 style="color: white;">Mes salles</h2>
-        <a href="/owner/add-room" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Ajouter une salle
-        </a>
-    </div>
-
-    <div class="row">
-        <% if (rooms.length === 0) { %>
-            <div class="col-12">
-                <div class="alert alert-info">
-                    Vous n'avez pas encore ajouté de salles. Commencez par en ajouter une !
+<!-- Hero Section pour Owner -->
+<section class="hero-section position-relative bg-gradient text-white py-5" data-aos="fade-up">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-12 text-center" data-aos="fade-right" data-aos-delay="200">
+                <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInLeft">Bienvenue sur votre tableau de bord</h1>
+                <p class="lead mb-4 animate__animated animate__fadeInLeft animate__delay-1s">Gérez vos salles, suivez vos réservations et avis.</p>
+                <div class="d-flex gap-3 justify-content-center animate__animated animate__fadeInUp animate__delay-2s">
+                    <a href="/owner/add-room" class="btn btn-light btn-lg hover-scale">
+                        <i class="fas fa-plus me-2"></i>Ajouter une salle
+                    </a>
+                    <a href="/owner/bookings" class="btn btn-outline-light btn-lg hover-scale">
+                        <i class="fas fa-calendar-check me-2"></i>Voir les réservations
+                    </a>
                 </div>
             </div>
-        <% } else { %>
-            <% rooms.forEach(function(room) { %>
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <img src="<%= room.image %>" class="card-img-top" alt="<%= room.name %>">
-                        <div class="card-body">
-                            <h5 class="card-title"><%= room.name %></h5>
-                            <p class="card-text"><%= room.description %></p>
-                            <ul class="list-unstyled">
-                                <li><i class="fas fa-map-marker-alt"></i> <%= room.wilaya || '—' %>,<%= room.location || '—' %> </li>
-                                <li><strong>Capacité:</strong> <%= room.capacity %> personnes</li>
-                                <li><strong>Prix:</strong> <%= room.price %>DA / jour</li>
-                            </ul>
-                            <% if (room.equipment && room.equipment.length > 0) { %>
-                                <div class="mb-3">
-                                    <strong>Équipements:</strong>
-                                    <ul class="list-inline">
-                                        <% room.equipment.forEach(function(item) { %>
-                                            <li class="list-inline-item badge bg-secondary"><%= item %></li>
-                                        <% }); %>
-                                    </ul>
+        </div>
+    </div>
+    <div class="shape-bottom">
+        <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path d="M0,0 C240,100 480,100 720,50 C960,0 1200,0 1440,100 L1440 100 L0 100 Z" fill="#ffffff"></path>
+        </svg>
+    </div>
+</section>
+
+<!-- Actions rapides -->
+<section class="quick-actions py-5 bg-light" data-aos="fade-up">
+    <div class="container">
+        <h2 class="text-center mb-5 section-title">Actions rapides</h2>
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <a href="/owner/add-room" class="action-card card border-0 shadow-sm h-100 text-decoration-none">
+                    <div class="card-body text-center">
+                        <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Ajouter une salle</h5>
+                        <p class="card-text text-muted">Créez une nouvelle annonce</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <a href="/owner/bookings" class="action-card card border-0 shadow-sm h-100 text-decoration-none">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Gérer réservations</h5>
+                        <p class="card-text text-muted">Voir les demandes</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <a href="/owner/reviews" class="action-card card border-0 shadow-sm h-100 text-decoration-none">
+                    <div class="card-body text-center">
+                        <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Voir avis</h5>
+                        <p class="card-text text-muted">Consultez les retours clients</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Réservations récentes -->
+<section class="recent-bookings py-5" data-aos="fade-up">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">Réservations récentes</h2>
+            <a href="/owner/bookings" class="btn btn-outline-primary">Voir tout</a>
+        </div>
+        <% if (recentBookings && recentBookings.length > 0) { %>
+            <div class="row">
+                <% recentBookings.forEach(function(booking, index) { %>
+                    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+                        <div class="booking-card card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-start mb-3">
+                                    <div class="booking-icon me-3">
+                                        <i class="fas fa-calendar-check text-primary"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h5 class="card-title mb-1 text-dark"><%= booking.roomName %></h5>
+                                        <p class="text-muted mb-0 small">
+                                            <i class="fas fa-user me-1"></i><%= booking.clientName %>
+                                        </p>
+                                    </div>
                                 </div>
-                            <% } %>
-                            <div class="d-flex gap-2">
-                                <a href="/owner/edit-room/<%= room.id %>" class="btn btn-outline-primary flex-grow-1">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </a>
-                                <form action="/owner/delete-room/<%= room.id %>" method="POST" class="flex-grow-1 m-0" onsubmit="return confirmDelete()">
-                                    <button type="submit" class="btn btn-outline-danger w-100">
-                                        <i class="fas fa-trash"></i> Supprimer
-                                    </button>
-                                </form>
+                                <div class="booking-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-calendar-alt text-info me-2"></i>
+                                        <span class="detail-label">Date:</span>
+                                        <span class="detail-value"><%= booking.date ? new Date(booking.date).toLocaleDateString('fr-FR') : 'Date non disponible' %></span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-coins text-success me-2"></i>
+                                        <span class="detail-label">Prix:</span>
+                                        <span class="detail-value"><%= booking.price ? parseFloat(booking.price).toFixed(2) + ' DA' : 'Prix non disponible' %></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            <% }); %>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <h5 class="text-light">Aucune réservation récente</h5>
+                <p class="text-light">Vos réservations apparaîtront ici</p>
+            </div>
         <% } %>
     </div>
-</div>
+</section>
 
-<!-- Ajout de Font Awesome pour les icônes -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<!-- Mes salles -->
+<section class="my-rooms py-5 bg-light" data-aos="fade-up">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">Mes salles</h2>
+            <a href="/owner/add-room" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter une salle
+            </a>
+        </div>
 
-<!-- Script pour la confirmation de suppression -->
+        <div class="row">
+            <% if (rooms.length === 0) { %>
+                <div class="col-12">
+                    <div class="alert alert-info text-center py-5">
+                        <i class="fas fa-door-open fa-3x text-muted mb-3"></i>
+                        <h5 class="text-light">Vous n'avez pas encore ajouté de salles</h5>
+                        <p class="mb-3">Commencez par créer votre première annonce pour attirer des clients.</p>
+                        <a href="/owner/add-room" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Créer ma première salle
+                        </a>
+                    </div>
+                </div>
+            <% } else { %>
+                <% rooms.forEach(function(room, index) { %>
+                    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+                        <div class="room-card card border-0 rounded-4 shadow-sm h-100">
+                            <div class="room-image-wrapper rounded-top-4 overflow-hidden">
+                                <img src="<%= room.image %>" class="card-img-top hover-zoom" alt="<%= room.name %>">
+                                <div class="room-overlay">
+                                    <span class="badge bg-primary px-3 py-2"><%= parseInt(room.price) %> DA/jour</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="room-header">
+                                    <h5 class="card-title fw-bold"><%= room.name %></h5>
+                                    <div class="location-badge">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <%= room.location %>
+                                    </div>
+                                </div>
+                                <p class="card-text text-muted"><%= room.description.substring(0, 100) %>...</p>
+                                <div class="room-features">
+                                    <div class="feature-badge">
+                                        <i class="fas fa-users"></i>
+                                        <%= room.capacity %> pers.
+                                    </div>
+                                    <% if (room.equipment && room.equipment.includes('WiFi')) { %>
+                                        <div class="feature-badge">
+                                            <i class="fas fa-wifi"></i>
+                                            WiFi
+                                        </div>
+                                    <% } %>
+                                    <% if (room.equipment && room.equipment.includes('Projecteur')) { %>
+                                        <div class="feature-badge">
+                                            <i class="fas fa-tv"></i>
+                                            Projecteur
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <div class="d-flex gap-2">
+                                    <a href="/owner/edit-room/<%= room.id %>" class="btn btn-outline-primary flex-grow-1">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger flex-grow-1" onclick="showDeleteRoomModal('<%= room.id %>', '<%= room.name.replace(/'/g, '\\\'') %>')">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<!-- Script pour la suppression de salle -->
 <script>
-function confirmDelete() {
-    return confirm('Êtes-vous sûr de vouloir supprimer cette salle ? Cette action est irréversible.');
+// =====================================================
+// Fonctions pour la suppression de salles
+// =====================================================
+function showDeleteRoomModal(roomId, roomName) {
+    const overlay = document.getElementById('deleteRoomModalOverlay');
+    const roomNameSpan = document.getElementById('deleteRoomName');
+    const form = document.getElementById('deleteRoomForm');
+
+    roomNameSpan.textContent = roomName;
+    form.action = '/owner/delete-room/' + roomId;
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function hideDeleteRoomModal() {
+    const overlay = document.getElementById('deleteRoomModalOverlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Fermer la modale de suppression de salle en cliquant à l'extérieur
+const deleteRoomOverlay = document.getElementById('deleteRoomModalOverlay');
+if (deleteRoomOverlay) {
+    deleteRoomOverlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideDeleteRoomModal();
+        }
+    });
 }
 </script>
+
+<!-- Styles pour la modale de confirmation -->
+<style>
+.confirm-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.confirm-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.confirm-modal {
+    background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+    border-radius: 20px;
+    padding: 2.5rem;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    transform: scale(0.8) translateY(-20px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.confirm-modal-overlay.active .confirm-modal {
+    transform: scale(1) translateY(0);
+}
+
+.confirm-modal-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+}
+
+.confirm-modal-icon.delete {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+    color: #ef4444;
+    border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+.confirm-modal-title {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.confirm-modal-text {
+    color: #cccccc;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.confirm-modal-text strong {
+    color: #007bff;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.btn-confirm-cancel,
+.btn-confirm-action {
+    padding: 0.875rem 1.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-confirm-cancel {
+    background: rgba(100, 116, 139, 0.2);
+    color: #cccccc;
+    border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.btn-confirm-cancel:hover {
+    background: rgba(100, 116, 139, 0.3);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.btn-confirm-action.delete {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.btn-confirm-action.delete:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+/* Styles pour les cartes de réservation */
+.booking-card {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.booking-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #6610f2);
+}
+
+.booking-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.booking-icon {
+    background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #007bff;
+}
+
+.booking-details {
+    margin-top: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(237, 27, 27, 0.02);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.detail-item:hover {
+    background: rgba(0, 123, 255, 0.05);
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #64748B;
+    margin-right: 0.5rem;
+}
+
+.detail-value {
+    color: #7DD3FC;
+    font-weight: 500;
+}
+</style>
+
+<!-- Modal de suppression de salle -->
+<div class="confirm-modal-overlay" id="deleteRoomModalOverlay">
+    <div class="confirm-modal">
+        <div class="confirm-modal-icon delete">
+            <i class="fas fa-trash-alt"></i>
+        </div>
+        <h3 class="confirm-modal-title">Supprimer cette salle</h3>
+        <p class="confirm-modal-text">Êtes-vous sûr de vouloir supprimer la salle <strong id="deleteRoomName"></strong> ? Cette action est irréversible et supprimera également toutes les réservations associées.</p>
+        <div class="confirm-modal-actions">
+            <button type="button" class="btn-confirm-cancel" onclick="hideDeleteRoomModal()">
+                <i class="fas fa-times"></i> Annuler
+            </button>
+            <form id="deleteRoomForm" method="POST" class="d-inline">
+                <button type="submit" class="btn-confirm-action delete">
+                    <i class="fas fa-trash-alt"></i> Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <%- include('../partials/footer') %>

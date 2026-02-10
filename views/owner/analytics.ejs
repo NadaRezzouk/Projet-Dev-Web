@@ -1,0 +1,109 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Analyses et statistiques</h2>
+
+    <!-- Statistiques principales -->
+    <div class="row text-center mb-5">
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-door-open fa-2x text-primary mb-3"></i>
+                    <h3 class="h2 mb-2"><%= stats.totalRooms %></h3>
+                    <p class="text-muted mb-0">Salles actives</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-calendar-check fa-2x text-success mb-3"></i>
+                    <h3 class="h2 mb-2"><%= stats.totalBookings %></h3>
+                    <p class="text-muted mb-0">Réservations totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-euro-sign fa-2x text-warning mb-3"></i>
+                    <h3 class="h2 mb-2"><%= stats.totalRevenue %></h3>
+                    <p class="text-muted mb-0">Revenus (DA)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-star fa-2x text-info mb-3"></i>
+                    <h3 class="h2 mb-2"><%= stats.averageRating %>/5</h3>
+                    <p class="text-muted mb-0">Note moyenne</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique des revenus -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Revenus par mois (6 derniers mois)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="/owner/dashboard" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+        </a>
+    </div>
+</div>
+
+<!-- Chart.js pour le graphique -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueData = <%= JSON.stringify(revenueByMonth) %>;
+
+    const labels = revenueData.map(item => {
+        const date = new Date(item.month + '-01');
+        return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    });
+
+    const data = revenueData.map(item => item.revenue);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenus (DA)',
+                data: data,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Évolution des revenus'
+                }
+            }
+        }
+    });
+});
+</script>
+
+<%- include('../partials/footer') %>

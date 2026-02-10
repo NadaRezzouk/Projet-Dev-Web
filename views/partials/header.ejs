@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <!-- Leaflet CSS pour les cartes -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/custom.css">
     <!-- Favicon -->
@@ -95,15 +96,11 @@
         </div>
     </nav>
 
-    <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-danger">
-            <%= error %>
-        </div>
-    <% } %>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         // Gestion de la déconnexion
         function handleLogout() {

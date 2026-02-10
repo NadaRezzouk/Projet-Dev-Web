@@ -258,6 +258,25 @@ app.get('/rooms', async (req, res) => {
       return { ...r, equipment: equipmentArr, amenities: amenitiesArr };
     });
 
+    // Fetch reviews for all rooms
+    if (rooms.length > 0) {
+      const roomIds = rooms.map(r => r.id);
+      const placeholders = roomIds.map(() => '?').join(',');
+      const [reviewRows] = await db.query(`SELECT * FROM reviews WHERE roomId IN (${placeholders}) AND isApproved = 1 ORDER BY date DESC`, roomIds);
+      
+      // Group reviews by roomId
+      const reviewsByRoom = {};
+      reviewRows.forEach(review => {
+        if (!reviewsByRoom[review.roomId]) reviewsByRoom[review.roomId] = [];
+        reviewsByRoom[review.roomId].push(review);
+      });
+      
+      // Attach reviews to rooms
+      rooms.forEach(room => {
+        room.reviews = reviewsByRoom[room.id] || [];
+      });
+    }
+
     // Passer aussi les filtres vers la vue pour marquer les selects
     res.render('rooms', { rooms, filters: req.query });
   } catch (error) {
@@ -309,7 +328,8 @@ app.get('/rooms/:id', verifyToken, async (req, res) => {
     const [reviewRows] = await db.query('SELECT * FROM reviews WHERE roomId = ? AND isApproved = 1 ORDER BY date DESC', [roomId]);
     room.reviews = reviewRows;
 
-    res.render('book-room', { room });
+    const error = req.query.error;
+    res.render('book-room', { room, error });
   } catch (error) {
     console.error('Erreur fetch room:', error);
     res.status(500).send('Erreur serveur');
@@ -318,7 +338,7 @@ app.get('/rooms/:id', verifyToken, async (req, res) => {
 
 // Route pour traiter la réservation
 // POST /rooms/:id/book — créer une réservation
-app.post('/rooms/:id/book', verifyToken, async (req, res) => {
+app.post('/rooms/:id/book', verifyToken, isClient, async (req, res) => {
   const conn = await db.getConnection();
   try {
     const roomId = parseInt(req.params.id, 10);
@@ -335,16 +355,19 @@ app.post('/rooms/:id/book', verifyToken, async (req, res) => {
     const room = roomRows[0];
     if (participants > room.capacity) {
       await conn.rollback(); conn.release();
-      return res.status(400).send('Nombre de participants dépasse la capacité');
+      return res.redirect(`/rooms/${roomId}?error=capacity_exceeded`);
     }
 
     const [conflicts] = await conn.query(
-      `SELECT id FROM bookings WHERE roomId = ? AND NOT (endDate <= ? OR startDate >= ?)`,
-      [roomId, startDate, endDate]
+      `SELECT id FROM bookings WHERE roomId = ? AND startDate <= ? AND endDate >= ?`,
+      [roomId, endDate, startDate]
     );
+    console.log('Checking conflicts for room', roomId, 'from', startDate, 'to', endDate);
+    console.log('Found conflicts:', conflicts.length);
     if (conflicts.length > 0) {
+      console.log('Conflict detected, redirecting with error');
       await conn.rollback(); conn.release();
-      return res.status(400).send('Salle déjà réservée pour cette période');
+      return res.redirect(`/rooms/${roomId}?error=already_booked`);
     }
 
     const start = new Date(startDate);
@@ -897,9 +920,40 @@ app.get('/owner/dashboard', verifyToken, isOwner, async (req, res) => {
       return { ...r, equipment, amenities };
     });
 
+    // Statistiques
+    const [totalRoomsResult] = await db.query('SELECT COUNT(*) as totalRooms FROM rooms WHERE ownerId = ?', [ownerId]);
+    const totalRooms = totalRoomsResult ? totalRoomsResult.totalRooms : 0;
+
+    const [totalBookingsResult] = await db.query('SELECT COUNT(*) as totalBookings FROM bookings b JOIN rooms r ON b.roomId = r.id WHERE r.ownerId = ?', [ownerId]);
+    const totalBookings = totalBookingsResult ? totalBookingsResult.totalBookings : 0;
+
+    const [totalRevenueResult] = await db.query('SELECT COALESCE(SUM(b.totalPrice), 0) as totalRevenue FROM bookings b JOIN rooms r ON b.roomId = r.id WHERE r.ownerId = ? AND b.status = "confirmed"', [ownerId]);
+    const totalRevenue = totalRevenueResult ? totalRevenueResult.totalRevenue : 0;
+
+    const [averageRatingResult] = await db.query('SELECT COALESCE(ROUND(AVG(rev.rating), 1), 0) as averageRating FROM reviews rev JOIN rooms r ON rev.roomId = r.id WHERE r.ownerId = ? AND rev.isApproved = 1', [ownerId]);
+    const averageRating = averageRatingResult ? averageRatingResult.averageRating : 0;
+
+    // Réservations récentes
+    const [recentBookingsRows] = await db.query(`
+      SELECT b.id, DATE_FORMAT(b.startDate, '%Y-%m-%d') as date, b.totalPrice as price, b.status, r.name as roomName, u.name as clientName
+      FROM bookings b 
+      JOIN rooms r ON b.roomId = r.id 
+      JOIN users u ON b.userId = u.id 
+      WHERE r.ownerId = ? 
+      ORDER BY b.createdAt DESC 
+      LIMIT 4
+    `, [ownerId]);
+
     res.render('owner/dashboard', {
       user: req.user,
-      rooms: enrichedRooms
+      rooms: enrichedRooms,
+      stats: {
+        totalRooms: totalRooms || 0,
+        totalBookings: totalBookings || 0,
+        totalRevenue: totalRevenue || 0,
+        averageRating: averageRating || 0
+      },
+      recentBookings: recentBookingsRows || []
     });
   } catch (error) {
     console.error('Erreur dashboard owner:', error);
@@ -1075,6 +1129,99 @@ app.post('/owner/delete-room/:id', verifyToken, isOwner, async (req, res) => {
   }
 });
 
+// GET /owner/bookings — liste des réservations de l'owner
+app.get('/owner/bookings', verifyToken, isOwner, async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const [bookingsRows] = await db.query(`
+      SELECT b.*, r.name as roomName, u.name as clientName, u.email as clientEmail
+      FROM bookings b 
+      JOIN rooms r ON b.roomId = r.id 
+      JOIN users u ON b.userId = u.id 
+      WHERE r.ownerId = ? 
+      ORDER BY b.createdAt DESC
+    `, [ownerId]);
+
+    res.render('owner/bookings', {
+      user: req.user,
+      bookings: bookingsRows
+    });
+  } catch (error) {
+    console.error('Erreur bookings owner:', error);
+    res.status(500).render('error', {
+      message: 'Erreur lors du chargement des réservations',
+      error: error
+    });
+  }
+});
+
+// GET /owner/reviews — avis sur les salles de l'owner
+app.get('/owner/reviews', verifyToken, isOwner, async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const [reviewsRows] = await db.query(`
+      SELECT rev.*, r.name as roomName, u.name as clientName
+      FROM reviews rev 
+      JOIN rooms r ON rev.roomId = r.id 
+      JOIN users u ON rev.userId = u.id 
+      WHERE r.ownerId = ? 
+      ORDER BY rev.date DESC
+    `, [ownerId]);
+
+    res.render('owner/reviews', {
+      user: req.user,
+      reviews: reviewsRows
+    });
+  } catch (error) {
+    console.error('Erreur reviews owner:', error);
+    res.status(500).render('error', {
+      message: 'Erreur lors du chargement des avis',
+      error: error
+    });
+  }
+});
+
+// GET /owner/analytics — analyses pour l'owner (placeholder)
+app.get('/owner/analytics', verifyToken, isOwner, async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    // Statistiques détaillées
+    const [[{ totalRooms }]] = await db.query('SELECT COUNT(*) as totalRooms FROM rooms WHERE ownerId = ?', [ownerId]);
+    const [[{ totalBookings }]] = await db.query('SELECT COUNT(*) as totalBookings FROM bookings b JOIN rooms r ON b.roomId = r.id WHERE r.ownerId = ?', [ownerId]);
+    const [[{ totalRevenue }]] = await db.query('SELECT COALESCE(SUM(b.price), 0) as totalRevenue FROM bookings b JOIN rooms r ON b.roomId = r.id WHERE r.ownerId = ? AND b.status = "confirmed"', [ownerId]);
+    const [[{ averageRating }]] = await db.query('SELECT COALESCE(ROUND(AVG(rev.rating), 1), 0) as averageRating FROM reviews rev JOIN rooms r ON rev.roomId = r.id WHERE r.ownerId = ? AND rev.isApproved = 1', [ownerId]);
+
+    // Revenus par mois (derniers 6 mois)
+    const [revenueByMonth] = await db.query(`
+      SELECT 
+        DATE_FORMAT(b.createdAt, '%Y-%m') as month,
+        SUM(b.price) as revenue
+      FROM bookings b 
+      JOIN rooms r ON b.roomId = r.id 
+      WHERE r.ownerId = ? AND b.status = "confirmed" AND b.createdAt >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+      GROUP BY DATE_FORMAT(b.createdAt, '%Y-%m')
+      ORDER BY month DESC
+    `, [ownerId]);
+
+    res.render('owner/analytics', {
+      user: req.user,
+      stats: {
+        totalRooms: totalRooms || 0,
+        totalBookings: totalBookings || 0,
+        totalRevenue: totalRevenue || 0,
+        averageRating: averageRating || 0
+      },
+      revenueByMonth
+    });
+  } catch (error) {
+    console.error('Erreur analytics owner:', error);
+    res.status(500).render('error', {
+      message: 'Erreur lors du chargement des analyses',
+      error: error
+    });
+  }
+});
+
 
 // GET /bookings/:id/review — afficher le formulaire d'avis (lecture depuis la BDD)
 app.get('/bookings/:id/review', verifyToken, isClient, async (req, res) => {
@@ -1158,7 +1305,7 @@ app.post('/bookings/:id/review', verifyToken, async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);
 });

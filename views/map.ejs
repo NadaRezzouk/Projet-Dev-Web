@@ -26,7 +26,15 @@
                 <div class="map-room-details"><span><i class="fas fa-map-marker-alt"></i> <%= room.wilaya %></span><span><i class="fas fa-users"></i> <%= room.capacity %></span></div>
                 <div class="map-room-price"><%= parseInt(room.price || 0) %> DA<span>/jour</span></div>
               </div>
-              <div class="map-room-action"><a href="/rooms/<%= room.id %>/book" class="btn-map-book" title="Réserver"><i class="fas fa-arrow-right"></i></a></div>
+              <div class="map-room-action">
+                <% if (user && (user.type === 'client' || user.type === 'admin')) { %>
+                  <a href="/rooms/<%= room.id %>/book" class="btn-map-book" title="Réserver"><i class="fas fa-arrow-right"></i></a>
+                <% } else if (!user) { %>
+                  <a href="/login" class="btn-map-book" title="Se connecter"><i class="fas fa-sign-in-alt"></i></a>
+                <% } else { %>
+                  <button class="btn-map-book btn-secondary" disabled title="Les propriétaires ne peuvent pas effectuer de réservations" style="cursor: not-allowed; opacity: 0.6;"><i class="fas fa-lock"></i></button>
+                <% } %>
+              </div>
             </div>
           <% }); %>
         </div>
@@ -108,7 +116,13 @@ document.addEventListener('DOMContentLoaded', function () {
                   <h5><%= room.name %></h5>
                   <p class="popup-location"><i class="fas fa-map-marker-alt"></i> <%= room.wilaya %></p>
                   <p class="popup-price"><%= parseInt(room.price || 0) %> DA/jour</p>
-                  <a href="/rooms/<%= room.id %>/book" class="popup-btn">Réserver</a>
+                  <% if (user && (user.type === 'client' || user.type === 'admin')) { %>
+                    <a href="/rooms/<%= room.id %>/book" class="popup-btn">Réserver</a>
+                  <% } else if (!user) { %>
+                    <a href="/login" class="popup-btn">Se connecter</a>
+                  <% } else { %>
+                    <button class="popup-btn" disabled style="cursor: not-allowed; opacity: 0.6;" title="Les propriétaires ne peuvent pas effectuer de réservations">Réservé aux clients</button>
+                  <% } %>
                 </div>
               </div>
             `, { className: 'custom-popup' }).addTo(map);
